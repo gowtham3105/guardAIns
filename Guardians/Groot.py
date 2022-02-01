@@ -1,10 +1,12 @@
-from ..Cell import Cell
-from ..Guardian import Guardian
-from ..Player import Player
+from Cell import Cell
+from Guardian import Guardian
+
+
+# from Player import Player
 
 
 class Groot(Guardian):
-    def __init__(self, belongs: Player, init_coordinates: Cell, alive=True):
+    def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.health = 200
         self.attack_damage = 25
         self.vision = 2

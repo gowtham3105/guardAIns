@@ -1,5 +1,5 @@
 from Cell import Cell
-from Player import Player
+# from Player import Player
 
 
 class Guardian:
@@ -12,7 +12,7 @@ class Guardian:
     is_alive = 0
     coordinates = None
 
-    def __init__(self, belongs: Player, init_coordinates: Cell, alive=True):
+    def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.belongs_to_player = belongs
         self.coordinates = init_coordinates
         self.is_alive = alive

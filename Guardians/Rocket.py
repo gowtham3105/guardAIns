@@ -1,10 +1,12 @@
-from ..Cell import Cell
-from ..Guardian import Guardian
-from ..Player import Player
+from Cell import Cell
+from Guardian import Guardian
+
+
+# from Player import Player
 
 
 class Rocket(Guardian):
-    def __init__(self, belongs: Player, init_coordinates: Cell, alive=True):
+    def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.health = 75
         self.attack_damage = 35
         self.vision = 4
