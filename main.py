@@ -9,11 +9,13 @@ def run():
     """
     env = Environment()
     env.createGraph(10, 10)
-    env.print_graph()
-    # graph = env.get_graph()
     player1 = Player(1, env.get_graph()[0][0])
     env.set_player1(player1)
-    env.movgen(env.get_player1())
+    ########### DEBUG ###########
+    # graph = env.get_graph()
+    env.print_graph()
+    neigh = env.movegen(env.get_player1())
+    print(neigh)
 
 
 # Press the green button in the gutter to run the script.

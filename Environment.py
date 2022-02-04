@@ -52,6 +52,8 @@ class Environment:
         matrix = []
         wall = ['|'] + ['-', '|'] * n
         printable_matrix = [wall, ]
+        self.__height = m
+        self.__width = n
 
         for i in range(m):
             temp_matrix = []
@@ -76,7 +78,7 @@ class Environment:
                         possible_neighbours.append([0, 1])
                 # if j-1 >= 0:
                 #     if matrix[i][j-1] not in matrix[i][j].get_neighbour_cells():
-                #         possible_neighbours.append([0,-1])
+                #         possible_neighbours.append([0, -1])
                 # print(possible_neighbours)
 
                 if not len(possible_neighbours):
@@ -84,8 +86,10 @@ class Environment:
                 random_choice = random.choice(possible_neighbours)
 
                 matrix[i + random_choice[0]][j + random_choice[1]].add_neighbour_cell(matrix[i][j])
-                matrix[i][j].add_neighbour_cell(matrix[i + random_choice[0]][j + random_choice[1]])
-                printable_matrix[2 * i + 1 + random_choice[0]][2 * j + 1 + random_choice[1]] = ' '
+                matrix[i][j].add_neighbour_cell(
+                    matrix[i + random_choice[0]][j + random_choice[1]])
+                printable_matrix[2 * i + 1 + random_choice[0]
+                                 ][2 * j + 1 + random_choice[1]] = ' '
 
         self.__graph = matrix
         self.__printable_matrix = printable_matrix
@@ -98,59 +102,42 @@ class Environment:
 
         return True
 
-    def movgen(self, player: Player) -> dict:
+    def movegen(self, player: Player) -> dict:
         # sent as input for the player object, it contains the neighboring cells,
         # current locations of troops, health of troops and feedback.
-        #
+
         return_dict = {
+            # 0 - up, 1 - left, 2 - down, 3 - right
             'gamora': [[], [], [], []],
             'drax': [[], [], [], []],
             'rocket': [[], [], [], []],
             'groot': [[], [], [], []],
             'star_lord': [[], [], [], []]
         }
-        # up
-        for key in player.guardians.keys:
+        for key in player.guardians.keys():
+            # for all directions
             current_guardian_obj = player.guardians[key]
-            current_cell = current_guardian_obj.coordinates
-            current_coordinates = current_guardian_obj.coordinates.__coordinates
-            for i in range(current_guardian_obj.vision):
-                if current_cell[1] > 0 and self.___graph[current_coordinates[0]][
-                    current_coordinates[1] - 1] in current_cell.neighbours:
-                    return_dict[key][0].append(self.___graph[current_coordinates[0]][current_coordinates[1] - 1])
-                    current_cell = self.___graph[current_coordinates[0]][current_coordinates[1] - 1]
+            for i in range(4):  # 0 - up, 1 - left, 2 - down, 3 - right
+                dir_ver = 0
+                dir_hor = 0
+                current_coordinates = current_guardian_obj.coordinates.get_coordinates()
+                current_cell = current_guardian_obj.coordinates
+                if i == 0 or i == 2:
+                    dir_ver = i - 1  # dir_ver = -1 or 1
                 else:
-                    break
-            # right
-            current_cell = current_guardian_obj.coordinates
-            current_coordinates = current_guardian_obj.coordinates.__coordinates
-            for i in range(current_guardian_obj.vision):
-                if current_cell[1] < self.__width and self.___graph[current_coordinates[0] + 1][
-                    current_coordinates[1]] in current_cell.neighbours:
-                    return_dict[key][1].append(self.___graph[current_coordinates[0] + 1][current_coordinates[1]])
-                    current_cell = self.___graph[current_coordinates[0] + 1][current_coordinates[1]]
-                else:
-                    break
-            # down
-            current_cell = current_guardian_obj.coordinates
-            current_coordinates = current_guardian_obj.coordinates.__coordinates
-            for i in range(current_guardian_obj.vision):
-                if current_cell[1] < self.__height and self.___graph[current_coordinates[0]][
-                    current_coordinates[1] + 1] in current_cell.neighbours:
-                    return_dict[key][2].append(self.___graph[current_coordinates[0]][current_coordinates[1] + 1])
-                    current_cell = self.___graph[current_coordinates[0]][current_coordinates[1] + 1]
-                else:
-                    break
-            # left
-            current_cell = current_guardian_obj.coordinates
-            current_coordinates = current_guardian_obj.coordinates.__coordinates
-            for i in range(current_guardian_obj.vision):
-                if current_cell[0] > 0 and self.___graph[current_coordinates[0] - 1][
-                    current_coordinates[1]] in current_cell.neighbours:
-                    return_dict[key][3].append(self.___graph[current_coordinates[0] - 1][current_coordinates[1]])
-                    current_cell = self.___graph[current_coordinates[0] + 1][current_coordinates[1]]
-                else:
-                    break
+                    dir_hor = i - 2  # dir_hor = -1 or 1
+                for x in range(1, current_guardian_obj.vision+1):
+                    possible_neighbour = (
+                        current_coordinates[0] + dir_ver*x, current_coordinates[1] + dir_hor*x)
+                    if possible_neighbour[0] < 0 or possible_neighbour[0] >= self.__height or possible_neighbour[1] < 0 or possible_neighbour[1] >= self.__width:
+                        break
+                    if self.__graph[possible_neighbour[0]][possible_neighbour[1]] in current_cell.get_neighbour_cells():
+                        return_dict[key][i].append(
+                            self.__graph[possible_neighbour[0]][possible_neighbour[1]])
+                        current_cell = self.__graph[possible_neighbour[0]
+                                                    ][possible_neighbour[1]]
+                    else:
+                        break
         return return_dict
 
     def update_rounds(self):
