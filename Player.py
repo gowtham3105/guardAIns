@@ -26,15 +26,15 @@ class Player:
         self.player_id = pid
         self.base_coordinates = base_coord
         self.gamora = Gamora(self, base_coord, True)
-        self.guardians['gamora'] = Gamora
+        self.guardians['gamora'] = self.gamora
         self.rocket = Rocket(self, base_coord, True)
-        self.guardians['rocket'] = Rocket
+        self.guardians['rocket'] = self.rocket
         self.groot = Groot(self, base_coord, True)
-        self.guardians['groot'] = Groot
+        self.guardians['groot'] = self.groot
         self.drax = Drax(self, base_coord, True)
-        self.guardians['drax'] = Drax
+        self.guardians['drax'] = self.drax
         self.star_lord = StarLord(self, base_coord, True)
-        self.guardians['star_lord'] = StarLord
+        self.guardians['star_lord'] = self.star_lord
 
     def bot(self, state: State):
         # return the action object

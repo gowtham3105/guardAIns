@@ -53,6 +53,7 @@ class Environment:
         matrix = []
         wall = ['|'] + ['-', '|'] * self.__width
         printable_matrix = [wall, ]
+
         for i in range(self.__height):
             temp_matrix = []
             for j in range(self.__width):
@@ -79,6 +80,7 @@ class Environment:
                     continue
                 if neighbour[1] + current_cell.get_coordinates()[1] < 0 \
                         or neighbour[1] + current_cell.get_coordinates()[1] >= self.__width:
+
                     continue
 
                 if visited[neighbour[0] + current_cell.get_coordinates()[0]][
@@ -98,6 +100,7 @@ class Environment:
                     2 * (current_cell.get_coordinates()[1]) + 1 + neighbour[1]][
                     2 * (current_cell.get_coordinates()[0]) + 1 + neighbour[0]] = ' '
 
+
         self.__graph = matrix
         self.__printable_matrix = printable_matrix
 
@@ -109,59 +112,43 @@ class Environment:
 
         return True
 
-    def movgen(self, player: Player) -> dict:
+    def movegen(self, player: Player) -> dict:
         # sent as input for the player object, it contains the neighboring cells,
         # current locations of troops, health of troops and feedback.
-        #
+
         return_dict = {
+            # 0 - up, 1 - left, 2 - down, 3 - right
             'gamora': [[], [], [], []],
             'drax': [[], [], [], []],
             'rocket': [[], [], [], []],
             'groot': [[], [], [], []],
             'star_lord': [[], [], [], []]
         }
-        # up
         for key in player.guardians.keys():
+            # for all directions
             current_guardian_obj = player.guardians[key]
-            current_cell = current_guardian_obj.coordinates
-            current_coordinates = current_cell.__coordinates
-            for i in range(current_guardian_obj.vision):
-                if current_cell[1] > 0 and self.__graph[current_coordinates[0]][
-                    current_coordinates[1] - 1] in current_cell.neighbours:
-                    return_dict[key][0].append(self.__graph[current_coordinates[0]][current_coordinates[1] - 1])
-                    current_cell = self.__graph[current_coordinates[0]][current_coordinates[1] - 1]
+            for i in range(4):  # 0 - up, 1 - left, 2 - down, 3 - right
+                dir_ver = 0
+                dir_hor = 0
+                current_coordinates = current_guardian_obj.coordinates.get_coordinates()
+                current_cell = current_guardian_obj.coordinates
+                if i == 0 or i == 2:
+                    dir_ver = i - 1  # dir_ver = -1 or 1
+
                 else:
-                    break
-            # right
-            current_cell = current_guardian_obj.coordinates
-            current_coordinates = current_guardian_obj.coordinates.__coordinates
-            for i in range(current_guardian_obj.vision):
-                if current_cell[1] < self.__width and self.__graph[current_coordinates[0] + 1][
-                    current_coordinates[1]] in current_cell.neighbours:
-                    return_dict[key][1].append(self.__graph[current_coordinates[0] + 1][current_coordinates[1]])
-                    current_cell = self.__graph[current_coordinates[0] + 1][current_coordinates[1]]
-                else:
-                    break
-            # down
-            current_cell = current_guardian_obj.coordinates
-            current_coordinates = current_guardian_obj.coordinates.__coordinates
-            for i in range(current_guardian_obj.vision):
-                if current_cell[1] < self.__height and self.__graph[current_coordinates[0]][
-                    current_coordinates[1] + 1] in current_cell.neighbours:
-                    return_dict[key][2].append(self.__graph[current_coordinates[0]][current_coordinates[1] + 1])
-                    current_cell = self.__graph[current_coordinates[0]][current_coordinates[1] + 1]
-                else:
-                    break
-            # left
-            current_cell = current_guardian_obj.coordinates
-            current_coordinates = current_guardian_obj.coordinates.__coordinates
-            for i in range(current_guardian_obj.vision):
-                if current_cell[0] > 0 and self.__graph[current_coordinates[0] - 1][
-                    current_coordinates[1]] in current_cell.neighbours:
-                    return_dict[key][3].append(self.__graph[current_coordinates[0] - 1][current_coordinates[1]])
-                    current_cell = self.__graph[current_coordinates[0] + 1][current_coordinates[1]]
-                else:
-                    break
+                    dir_hor = i - 2  # dir_hor = -1 or 1
+                for x in range(1, current_guardian_obj.vision+1):
+                    possible_neighbour = (
+                        current_coordinates[0] + dir_ver*x, current_coordinates[1] + dir_hor*x)
+                    if possible_neighbour[0] < 0 or possible_neighbour[0] >= self.__height or possible_neighbour[1] < 0 or possible_neighbour[1] >= self.__width:
+                        break
+                    if self.__graph[possible_neighbour[0]][possible_neighbour[1]] in current_cell.get_neighbour_cells():
+                        return_dict[key][i].append(
+                            self.__graph[possible_neighbour[0]][possible_neighbour[1]])
+                        current_cell = self.__graph[possible_neighbour[0]
+                                                    ][possible_neighbour[1]]
+                    else:
+                        break
         return return_dict
 
     def update_rounds(self):
