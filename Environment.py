@@ -8,7 +8,7 @@ from State import State
 
 
 class Environment:
-    def __init__(self) -> None:
+    def __init__(self, height, width) -> None:
         self.__env = {'__name__': 'GuardAIns', '__version__': '0.1'}
         self.__graph = None
         self.__rounds = 0
@@ -17,8 +17,8 @@ class Environment:
         self.__currentActions = []
         self.___player1 = None
         self.___player2 = None
-        self.__width = None
-        self.__height = None
+        self.__width = width
+        self.__height = height
         self.__printable_matrix = None
 
     def get_env(self):
@@ -48,44 +48,55 @@ class Environment:
     def set_player2(self, player2: Player) -> None:
         self.___player2 = player2
 
-    def createGraph(self, m: int, n: int) -> None:
-        matrix = []
-        wall = ['|'] + ['-', '|'] * n
-        printable_matrix = [wall, ]
+    def create_graph(self) -> None:
 
-        for i in range(m):
+        matrix = []
+        wall = ['|'] + ['-', '|'] * self.__width
+        printable_matrix = [wall, ]
+        for i in range(self.__height):
             temp_matrix = []
-            for j in range(n):
+            for j in range(self.__width):
                 temp_matrix.append(Cell((i, j)))
             matrix.append(temp_matrix)
-            cell_spaces = ['|'] + [' ', '|'] * n
+            cell_spaces = ['|'] + [' ', '|'] * self.__width
             printable_matrix.append(cell_spaces.copy())
             printable_matrix.append(wall.copy())
 
-        for i in range(m):
-            for j in range(n):
-                possible_neighbours = []
-                if i + 1 < m:
-                    if matrix[i + 1][j] not in matrix[i][j].get_neighbour_cells():
-                        possible_neighbours.append([1, 0])
-                if i - 1 >= 0:
-                    if matrix[i - 1][j] not in matrix[i][j].get_neighbour_cells():
-                        possible_neighbours.append([-1, 0])
-                if j + 1 < n:
-                    if matrix[i][j + 1] not in matrix[i][j].get_neighbour_cells():
-                        possible_neighbours.append([0, 1])
-                # if j-1 >= 0:
-                #     if matrix[i][j-1] not in matrix[i][j].get_neighbour_cells():
-                #         possible_neighbours.append([0,-1])
-                # print(possible_neighbours)
+        stack = [matrix[0][0]]
+        visited = [[0 for _ in range(self.__width)] for _ in range(self.__height)]
+        while len(stack):
+            current_cell = stack.pop()
+            if visited[current_cell.get_coordinates()[0]][current_cell.get_coordinates()[1]] == 1:
+                continue
+            visited[current_cell.get_coordinates()[0]][current_cell.get_coordinates()[1]] = 1
+            possible_neighbours = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+            random.shuffle(possible_neighbours)
+            # possible_neighbours = random.choices(possible_neighbours, k=3)
 
-                if not len(possible_neighbours):
+            for neighbour in possible_neighbours:
+                if neighbour[0] + current_cell.get_coordinates()[0] < 0 \
+                        or neighbour[0] + current_cell.get_coordinates()[0] >= self.__height:
                     continue
-                random_choice = random.choice(possible_neighbours)
+                if neighbour[1] + current_cell.get_coordinates()[1] < 0 \
+                        or neighbour[1] + current_cell.get_coordinates()[1] >= self.__width:
+                    continue
 
-                matrix[i + random_choice[0]][j + random_choice[1]].add_neighbour_cell(matrix[i][j])
-                matrix[i][j].add_neighbour_cell(matrix[i + random_choice[0]][j + random_choice[1]])
-                printable_matrix[2 * i + 1 + random_choice[0]][2 * j + 1 + random_choice[1]] = ' '
+                if visited[neighbour[0] + current_cell.get_coordinates()[0]][
+                    neighbour[1] + current_cell.get_coordinates()[1]] == 1:
+                    continue
+                if matrix[neighbour[0] + current_cell.get_coordinates()[0]][
+                    neighbour[1] + current_cell.get_coordinates()[1]] in stack:
+                    continue
+
+                current_cell.add_neighbour_cell(matrix[neighbour[0] + current_cell.get_coordinates()[0]][
+                                                    neighbour[1] + current_cell.get_coordinates()[1]])
+                matrix[neighbour[0] + current_cell.get_coordinates()[0]][
+                    neighbour[1] + current_cell.get_coordinates()[1]].add_neighbour_cell(current_cell)
+                stack.append(matrix[neighbour[0] + current_cell.get_coordinates()[0]][
+                                 neighbour[1] + current_cell.get_coordinates()[1]])
+                printable_matrix[
+                    2 * (current_cell.get_coordinates()[1]) + 1 + neighbour[1]][
+                    2 * (current_cell.get_coordinates()[0]) + 1 + neighbour[0]] = ' '
 
         self.__graph = matrix
         self.__printable_matrix = printable_matrix
@@ -110,45 +121,45 @@ class Environment:
             'star_lord': [[], [], [], []]
         }
         # up
-        for key in player.guardians.keys:
+        for key in player.guardians.keys():
             current_guardian_obj = player.guardians[key]
             current_cell = current_guardian_obj.coordinates
-            current_coordinates = current_guardian_obj.coordinates.__coordinates
+            current_coordinates = current_cell.__coordinates
             for i in range(current_guardian_obj.vision):
-                if current_cell[1] > 0 and self.___graph[current_coordinates[0]][
+                if current_cell[1] > 0 and self.__graph[current_coordinates[0]][
                     current_coordinates[1] - 1] in current_cell.neighbours:
-                    return_dict[key][0].append(self.___graph[current_coordinates[0]][current_coordinates[1] - 1])
-                    current_cell = self.___graph[current_coordinates[0]][current_coordinates[1] - 1]
+                    return_dict[key][0].append(self.__graph[current_coordinates[0]][current_coordinates[1] - 1])
+                    current_cell = self.__graph[current_coordinates[0]][current_coordinates[1] - 1]
                 else:
                     break
             # right
             current_cell = current_guardian_obj.coordinates
             current_coordinates = current_guardian_obj.coordinates.__coordinates
             for i in range(current_guardian_obj.vision):
-                if current_cell[1] < self.__width and self.___graph[current_coordinates[0] + 1][
+                if current_cell[1] < self.__width and self.__graph[current_coordinates[0] + 1][
                     current_coordinates[1]] in current_cell.neighbours:
-                    return_dict[key][1].append(self.___graph[current_coordinates[0] + 1][current_coordinates[1]])
-                    current_cell = self.___graph[current_coordinates[0] + 1][current_coordinates[1]]
+                    return_dict[key][1].append(self.__graph[current_coordinates[0] + 1][current_coordinates[1]])
+                    current_cell = self.__graph[current_coordinates[0] + 1][current_coordinates[1]]
                 else:
                     break
             # down
             current_cell = current_guardian_obj.coordinates
             current_coordinates = current_guardian_obj.coordinates.__coordinates
             for i in range(current_guardian_obj.vision):
-                if current_cell[1] < self.__height and self.___graph[current_coordinates[0]][
+                if current_cell[1] < self.__height and self.__graph[current_coordinates[0]][
                     current_coordinates[1] + 1] in current_cell.neighbours:
-                    return_dict[key][2].append(self.___graph[current_coordinates[0]][current_coordinates[1] + 1])
-                    current_cell = self.___graph[current_coordinates[0]][current_coordinates[1] + 1]
+                    return_dict[key][2].append(self.__graph[current_coordinates[0]][current_coordinates[1] + 1])
+                    current_cell = self.__graph[current_coordinates[0]][current_coordinates[1] + 1]
                 else:
                     break
             # left
             current_cell = current_guardian_obj.coordinates
             current_coordinates = current_guardian_obj.coordinates.__coordinates
             for i in range(current_guardian_obj.vision):
-                if current_cell[0] > 0 and self.___graph[current_coordinates[0] - 1][
+                if current_cell[0] > 0 and self.__graph[current_coordinates[0] - 1][
                     current_coordinates[1]] in current_cell.neighbours:
-                    return_dict[key][3].append(self.___graph[current_coordinates[0] - 1][current_coordinates[1]])
-                    current_cell = self.___graph[current_coordinates[0] + 1][current_coordinates[1]]
+                    return_dict[key][3].append(self.__graph[current_coordinates[0] - 1][current_coordinates[1]])
+                    current_cell = self.__graph[current_coordinates[0] + 1][current_coordinates[1]]
                 else:
                     break
         return return_dict
