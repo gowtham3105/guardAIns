@@ -5,7 +5,8 @@ class Cell:
         self.__neighbour_cells = []
 
     def add_neighbour_cell(self, cell: 'Cell'):
-        self.__neighbour_cells.append(cell)
+        if cell not in self.__neighbour_cells:
+            self.__neighbour_cells.append(cell)
 
     def get_neighbour_cells(self):
         return self.__neighbour_cells
