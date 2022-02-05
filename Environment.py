@@ -1,5 +1,7 @@
 import random
 
+from func_timeout import func_timeout, FunctionTimedOut
+
 from Action import Action
 from Cell import Cell
 from Feedback import Feedback
@@ -8,18 +10,25 @@ from State import State
 
 
 class Environment:
-    def __init__(self, height, width) -> None:
+    def __init__(self, height, width, max_penality_score, player_timeout) -> None:
         self.__env = {'__name__': 'GuardAIns', '__version__': '0.1'}
         self.__graph = None
         self.__rounds = 0
         self.__currentState = None
-        self.__feedback = None
+        self.__player1_feedback = None
+        self.__player2_feedback = None
         self.__currentActions = []
         self.___player1 = None
         self.___player2 = None
         self.__width = width
         self.__height = height
         self.__printable_matrix = None
+        self.__player1_actions = []
+        self.__player2_actions = []
+        self.__player1_penality_score = max_penality_score
+        self.__player2_penality_score = max_penality_score
+        self.__player_timeout = player_timeout
+        self.__winner = None
 
     def get_env(self):
         return self.__env
@@ -47,6 +56,27 @@ class Environment:
 
     def set_player2(self, player2: Player) -> None:
         self.___player2 = player2
+
+    def get_width(self):
+        return self.__width
+
+    def get_height(self):
+        return self.__height
+
+    def get_player1_actions(self):
+        return self.__player1_actions
+
+    def get_player2_actions(self):
+        return self.__player2_actions
+
+    def get_player1_penality_score(self):
+        return self.__player1_penality_score
+
+    def get_player2_penality_score(self):
+        return self.__player2_penality_score
+
+    def get_winner(self):
+        return self.__winner
 
     def create_graph(self) -> None:
 
@@ -80,7 +110,6 @@ class Environment:
                     continue
                 if neighbour[1] + current_cell.get_coordinates()[1] < 0 \
                         or neighbour[1] + current_cell.get_coordinates()[1] >= self.__width:
-
                     continue
 
                 if visited[neighbour[0] + current_cell.get_coordinates()[0]][
@@ -99,7 +128,6 @@ class Environment:
                 printable_matrix[
                     2 * (current_cell.get_coordinates()[1]) + 1 + neighbour[1]][
                     2 * (current_cell.get_coordinates()[0]) + 1 + neighbour[0]] = ' '
-
 
         self.__graph = matrix
         self.__printable_matrix = printable_matrix
@@ -137,22 +165,84 @@ class Environment:
 
                 else:
                     dir_hor = i - 2  # dir_hor = -1 or 1
-                for x in range(1, current_guardian_obj.vision+1):
+                for x in range(1, current_guardian_obj.vision + 1):
                     possible_neighbour = (
-                        current_coordinates[0] + dir_ver*x, current_coordinates[1] + dir_hor*x)
-                    if possible_neighbour[0] < 0 or possible_neighbour[0] >= self.__height or possible_neighbour[1] < 0 or possible_neighbour[1] >= self.__width:
+                        current_coordinates[0] + dir_ver * x, current_coordinates[1] + dir_hor * x)
+                    if possible_neighbour[0] < 0 or possible_neighbour[0] >= self.__height or possible_neighbour[
+                        1] < 0 or possible_neighbour[1] >= self.__width:
                         break
                     if self.__graph[possible_neighbour[0]][possible_neighbour[1]] in current_cell.get_neighbour_cells():
                         return_dict[key][i].append(
                             self.__graph[possible_neighbour[0]][possible_neighbour[1]])
                         current_cell = self.__graph[possible_neighbour[0]
-                                                    ][possible_neighbour[1]]
+                        ][possible_neighbour[1]]
                     else:
                         break
         return return_dict
 
     def update_rounds(self):
-        pass
+        if self.__player1_penality_score < 0:
+            self.__winner = self.__player2
+            return True
+        if self.__player2_penality_score < 0:
+            self.__winner = self.__player1
+            return True
+
+        player1_state = State(self.movegen(self.__player1), self.__player1_feedback, self.__player1_penality_score)
+        player2_state = State(self.movegen(self.__player2), self.__player2_feedback, self.__player2_penality_score)
+
+        player1_error = False
+        player2_error = False
+
+        try:
+            player1_action = func_timeout(self.__player_timeout, self.___player1.bot, args=(player1_state,))
+        except FunctionTimedOut:
+            self.__player1_feedback = Feedback("timeout")
+            player1_error = True
+            self.reduce_score("player1", "timeout")
+        except Exception as e:
+            self.__player1_feedback = Feedback("error", e)
+            player1_error = True
+            self.reduce_score("player1", "error")
+
+        try:
+            player2_action = func_timeout(self.__player_timeout, self.___player2.bot, args=(player2_state,))
+        except FunctionTimedOut:
+            self.__player2_feedback = Feedback("timeout")
+            player2_error = True
+            self.reduce_score("player2", "timeout")
+        except Exception as e:
+            self.__player2_feedback = Feedback("error", e)
+            player2_error = True
+            self.reduce_score("player2", "error")
+
+        self.execute_action(player1_action, player2_action, player1_error, player2_error)
+
+        self.__rounds += 1
+
+        return True
 
     def validate_action(self, action: Action) -> bool:
         pass
+
+    def execute_action(self, player1_action: Action, player2_action: Action, player1_error: bool, player2_error: bool):
+        pass
+
+    def reduce_score(self, player: str, feedback_code: str):
+
+        FEEDBACKS_CODES = {
+            "timeout": -1,
+            "error": -2,
+            "invalid_action": -2,
+        }
+        players = {
+            "player1": self.__player1_penality_score,
+            "player2": self.__player1_penality_score
+        }
+        if feedback_code in FEEDBACKS_CODES.keys():
+            if player in players:
+                players[player] += FEEDBACKS_CODES[feedback_code]
+            else:
+                raise ValueError("Invalid player name")
+        else:
+            raise ValueError("Invalid feedback code")

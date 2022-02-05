@@ -5,5 +5,5 @@ class InfinityStone:
         self.guardianObject = None
         self.isReturnedToBase = False
 
-    def update_guardian():
+    def update_guardian(self):
         pass

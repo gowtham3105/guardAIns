@@ -18,4 +18,4 @@ class Cell:
         return str(self.__coordinates)
 
     def __repr__(self):
-        return str(self.__coordinates)
+        return "Cell" + str(self.__coordinates)
