@@ -16,3 +16,6 @@ class Cell:
 
     def __str__(self) -> str:
         return str(self.__coordinates)
+
+    def __repr__(self):
+        return str(self.__coordinates)
