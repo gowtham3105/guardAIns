@@ -1,6 +1,9 @@
 import random
 
-from func_timeout import FunctionTimedOut, func_timeout
+
+from idna import valid_contextj
+
+from func_timeout import func_timeout, FunctionTimedOut
 
 from Action import Action
 from Cell import Cell
@@ -216,17 +219,57 @@ class Environment:
             player2_error = True
             self.reduce_score("player2", "error")
 
-        self.execute_action(player1_action, player2_action, player1_error, player2_error)
-
+        self.execute_action(player1_action, player2_action, player1_error, player2_error)                
         self.__rounds += 1
 
         return True
 
     def validate_action(self, action: Action) -> bool:
-        pass
+        #Always check if the acting guardian is alive or not
+        return True
 
     def execute_action(self, player1_action: Action, player2_action: Action, player1_error: bool, player2_error: bool):
-        pass
+        if(self.validate_action(player1_action)==False and self.validate_action(player2_action)==False):
+            player1_error = True
+            player2_error = True
+            #Implement penlaty score for player 1 and 2
+            return
+        elif(self.validate_action(player1_action)==False and self.validate_action(player2_action)==True):
+            player1_error = True
+            #Implement penlaty score for player 1
+            return
+        elif(self.validate_action(player1_action)==True and self.validate_action(player2_action)==False):
+            player2_error = True
+            #Implement penlaty score for player 2
+            return
+        
+        if(player1_action.get_action_type() == "MOVE"):
+            guardian=player1_action.get_guardian() #update it to return guardian object directly
+            guardian.get_coordinates().update_is_guardian_present()
+            guardian.set_coordinates(player1_action.get_target()) #update target to return cell object directly
+            player1_action.get_target().update_is_guardian_present()
+
+        elif(player1_action.get_action_type == "Attack"):
+            guardians_present = player1_action.get_target().get_guardians_present()
+            our_guadian=player1_action.get_guardian()
+            for guardian in guardians_present:
+                #if multiple enemy guardians are present then attack all, if none of them are there then for guardians present would be empty
+                if(guardian.belongs_to==self.___player2):
+                    #update get_troop to return guardian object after checking if the guardian is not dead
+                    guardian.set_health(guardian.get_health()-our_guadian.get_damage())
+                    if(guardian.get_health()<=0):
+                        guardian.is_alive=False
+                        guardian.set_health(0)
+
+                #Set appropriate feedback for other player
+                
+               
+        elif(player1_action.get_action_type == "Special"):
+            player1_action.get_guardian().special_ability() #since we are getting the guradian object corresponding to the sub class, we can directly call the special ability
+            
+        return
+            
+        
 
     def reduce_score(self, player: str, feedback_code: str):
 
