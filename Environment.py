@@ -225,21 +225,40 @@ class Environment:
 
     def validate_action(self, action: Action) -> bool:
         #Always check if the acting guardian is alive or not
-        guardian = action.get_guardian()
-        if action.guardian.is_alive:
-            if action.get_action_type()=="ATTACK":
-                if (action.get_target()[0] <= action.guardian.coordinates[0] + action.guardian.vision) and (action.get_target()[0] >= action.guardian.coordinates[0] - action.guardian.vision ) and (action.get_target()[1] <= action.guardian.coordinates[1] + action.guardian.vision ) and (action.get_target()[1] >= action.guardian.coordinates[1] - action.guardian.vision ):
-                    return True
-                return False
-            elif action.get_action_type()=="MOVE":
-                if (action.get_target()[0] <= action.guardian.coordinates[0] + action.guardian.speed ) and (action.get_target()[0] >= action.guardian.coordinates[0] - action.guardian.speed ) and (action.get_target()[1] <= action.guardian.coordinates[1] + action.guardian.speed ) and (action.get_target()[1] >= action.guardian.coordinates[1] - action.guardian.speed ):
-                    return True
-                return False
-            elif action.get_action_type()=="SPECIAL":
+        player = action.player_id
+        if player == '1':
+            guardian = self.__player1.get_guardian_by_type(action.get_guardian_type())
+            if action.guardian.is_alive:
+                if action.get_action_type()=="ATTACK":
+                    if (action.get_target()[0] <= action.guardian.coordinates[0] + action.guardian.vision) and (action.get_target()[0] >= action.guardian.coordinates[0] - action.guardian.vision ) and (action.get_target()[1] <= action.guardian.coordinates[1] + action.guardian.vision ) and (action.get_target()[1] >= action.guardian.coordinates[1] - action.guardian.vision ):
+                        return True
+                    return False
+                elif action.get_action_type()=="MOVE":
+                    if (action.get_target()[0] <= action.guardian.coordinates[0] + action.guardian.speed ) and (action.get_target()[0] >= action.guardian.coordinates[0] - action.guardian.speed ) and (action.get_target()[1] <= action.guardian.coordinates[1] + action.guardian.speed ) and (action.get_target()[1] >= action.guardian.coordinates[1] - action.guardian.speed ):
+                        return True
+                    return False
+                elif action.get_action_type()=="SPECIAL":
                 #check all parameters for special actions once it is updated
-                return True
-        else:
-            return False
+                    return True
+            else:
+                return False
+        elif player == '2':
+            guardian = self.__player2.get_guardian_by_type(action.get_guardian_type())
+            if action.guardian.is_alive:
+                if action.get_action_type()=="ATTACK":
+                    if (action.get_target()[0] <= action.guardian.coordinates[0] + action.guardian.vision) and (action.get_target()[0] >= action.guardian.coordinates[0] - action.guardian.vision ) and (action.get_target()[1] <= action.guardian.coordinates[1] + action.guardian.vision ) and (action.get_target()[1] >= action.guardian.coordinates[1] - action.guardian.vision ):
+                        return True
+                    return False
+                elif action.get_action_type()=="MOVE":
+                    if (action.get_target()[0] <= action.guardian.coordinates[0] + action.guardian.speed ) and (action.get_target()[0] >= action.guardian.coordinates[0] - action.guardian.speed ) and (action.get_target()[1] <= action.guardian.coordinates[1] + action.guardian.speed ) and (action.get_target()[1] >= action.guardian.coordinates[1] - action.guardian.speed ):
+                        return True
+                    return False
+                elif action.get_action_type()=="SPECIAL":
+                #check all parameters for special actions once it is updated
+                    return True
+            else:
+                return False
+        return False
 
     def execute_action(self, player1_action: Action, player2_action: Action, player1_error: bool, player2_error: bool):
         if(self.validate_action(player1_action)==False and self.validate_action(player2_action)==False):

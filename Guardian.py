@@ -25,6 +25,9 @@ class Guardian:
     def update_cooldown(self):
         # called from environment, cold own is updated after every round
         return 0
+    
+    def get_isalive(self):
+        return self.is_alive
 
     def mark_as_dead(self, alive=False):
         # marks a player as dead
