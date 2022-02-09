@@ -1,6 +1,6 @@
 import random
 
-from func_timeout import func_timeout, FunctionTimedOut
+from func_timeout import FunctionTimedOut, func_timeout
 
 from Action import Action
 from Cell import Cell
