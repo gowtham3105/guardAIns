@@ -1,4 +1,4 @@
-from Cell import Cell
+from Cells.Cell import Cell
 from Guardian import Guardian
 
 
@@ -18,3 +18,6 @@ class Drax(Guardian):
         # See Through Walls, upto range one,
         #  behind a wall can be seen
         return 0
+
+    def __repr__(self):
+        return "Drax" + self.coordinates.__repr__()

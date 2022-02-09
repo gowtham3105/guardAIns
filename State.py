@@ -1,8 +1,8 @@
-from Action import Action
+# from Action import Action
 
 
 class State:
-    def __init__(self, state: str, parent, action: Action = None) -> None:
+    def __init__(self, state: str, parent, action) -> None:
         self.__state = state
         self.__parent = parent
         self.__action = action

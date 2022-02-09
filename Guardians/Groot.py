@@ -1,4 +1,4 @@
-from Cell import Cell
+from Cells.Cell import Cell
 from Guardian import Guardian
 
 
@@ -18,3 +18,6 @@ class Groot(Guardian):
         # Call this in updation of each round
         # and increase health by 5
         return 0
+
+    def __repr__(self):
+        return "Groot" + self.coordinates.__repr__()

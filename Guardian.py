@@ -1,4 +1,4 @@
-from Cell import Cell
+# from Cells.Cell import Cell
 # from Player import Player
 
 
@@ -12,12 +12,12 @@ class Guardian:
     is_alive = 0
     coordinates = None
 
-    def __init__(self, belongs, init_coordinates: Cell, alive=True):
+    def __init__(self, belongs, init_coordinates, alive=True):
         self.belongs_to_player = belongs
         self.coordinates = init_coordinates
         self.is_alive = alive
 
-    def attack(self, cell: Cell):
+    def attack(self, cell):
         # check if cell has an enemy i.e guardian from opposite team
         # update health
         return 0
@@ -29,5 +29,9 @@ class Guardian:
     def mark_as_dead(self, alive=False):
         # marks a player as dead
         self.is_alive = False
-    def set_coordinates(self, coordinates: Cell):
+
+    def set_coordinates(self, coordinates):
         self.coordinates = coordinates
+
+    def get_coordinates(self):
+        return self.coordinates

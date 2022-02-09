@@ -1,4 +1,4 @@
-from Cell import Cell
+from Cells.Cell import Cell
 from Guardian import Guardian
 
 
@@ -17,3 +17,6 @@ class Rocket(Guardian):
     def special_ability(self):
         # Definite Attack, Lockon Attack
         return 0
+
+    def __repr__(self):
+        return "Rocket" + self.coordinates.__repr__()

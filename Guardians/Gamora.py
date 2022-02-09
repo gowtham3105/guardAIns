@@ -1,4 +1,4 @@
-from Cell import Cell
+from Cells.Cell import Cell
 from Guardian import Guardian
 
 
@@ -19,3 +19,6 @@ class Gamora(Guardian):
         # then do whatever is required
         # JUMP anywhere within the radius
         return 0
+
+    def __repr__(self):
+        return "Gamora" + self.coordinates.__repr__()
