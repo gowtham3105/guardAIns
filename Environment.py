@@ -1,6 +1,5 @@
 import random
-
-from func_timeout import func_timeout, FunctionTimedOut
+import time
 
 from Action import Action
 from Cells.Cell import Cell
@@ -12,8 +11,10 @@ from State import State
 
 
 class Environment:
-    def __init__(self, height, width, max_penality_score, player_timeout, max_rounds) -> None:
+    def __init__(self, room_id, start_time, height, width, max_penality_score, player_timeout, max_rounds) -> None:
         self.__env = {'__name__': 'GuardAIns', '__version__': '0.1'}
+        self.__room_id = room_id
+        self.__start_time = start_time
         self.__graph = None
         self.__rounds = 0
         self.__currentState = None
@@ -36,6 +37,12 @@ class Environment:
 
     def get_env(self):
         return self.__env
+
+    def get_start_time(self):
+        return self.__start_time
+
+    def get_room_id(self):
+        return self.__room_id
 
     def get_graph(self):
         return self.__graph
@@ -144,7 +151,7 @@ class Environment:
 
         return True
 
-    def is_connected(self):
+    def is_graph_connected(self):
         all_cells = []
 
         for i in range(self.__height):
@@ -220,62 +227,101 @@ class Environment:
                         break
         return return_dict
 
-    def update_rounds(self):
-        if self.__player1_penality_score < 0 <= self.__player2_penality_score:  # player 2 wins
-            self.__winner = self.__player2
-            self.__game_over = True
-            return True
-        if self.__player2_penality_score < 0 <= self.__player1_penality_score:  # player 1 wins
-            self.__winner = self.__player1
-            self.__game_over = True
-            return True
-        if self.__player1_penality_score < 0 and self.__player2_penality_score < 0:  # draw
-            self.__winner = None
-            self.__game_over = True
-            return True
+    def update_rounds(self, sio):
+        print("Updating rounds")
+        while self.get_start_time() - time.time() > 0:
+            print("Time left: ", self.get_start_time() - time.time())
+            time.sleep(1)
 
-        if self.__max_rounds < self.__rounds:  # If Max Rounds is reached
-            self.__winner = None
-            self.__game_over = True
-            return True
-        # print(self.__)
-        player1_state = State(self.movegen(self.get_player1()), self.__player1_feedback, self.__player1_penality_score)
-        player2_state = State(self.movegen(self.get_player2()), self.__player2_feedback, self.__player2_penality_score)
+        print('Starting Update Rounds')
+        print(self.get_player1(), self.get_player2())
+        if self.get_player1() is None:
+            if self.get_player2() is None:
+                # both players are dead
+                print("Both players are Not Connected")
+                self.__winner = None
+                self.__game_over = True
+                return True
+            else:
+                # player 2 is alive
+                self.__winner = self.get_player2()
+                self.__game_over = True
+                print("Player 2 is the Winner")
+                return True
+        else:
+            if self.get_player2() is None:
+                # player 1 is alive
+                self.__winner = self.get_player1()
+                self.__game_over = True
+                print("Player 1 is the Winner")
+                return True
 
-        player1_error = False
-        player2_error = False
+        while True:
+            if self.__player1_penality_score < 0 <= self.__player2_penality_score:  # player 2 wins
+                self.__winner = self.__player2
+                self.__game_over = True
+                return True
+            if self.__player2_penality_score < 0 <= self.__player1_penality_score:  # player 1 wins
+                self.__winner = self.__player1
+                self.__game_over = True
+                return True
+            if self.__player1_penality_score < 0 and self.__player2_penality_score < 0:  # draw
+                self.__winner = None
+                self.__game_over = True
+                return True
 
-        player1_action = None
-        player2_action = None
+            if self.__max_rounds < self.__rounds:  # If Max Rounds is reached
+                self.__winner = None
+                self.__game_over = True
+                return True
+            player1_state = State(self.movegen(self.get_player1()), self.__player1_feedback,
+                                  self.__player1_penality_score)
+            player2_state = State(self.movegen(self.get_player2()), self.__player2_feedback,
+                                  self.__player2_penality_score)
 
-        try:
-            player1_action = func_timeout(self.__player_timeout, self.__player1.bot, args=(player1_state,))
-        except FunctionTimedOut:
-            self.__player1_feedback = Feedback("timeout")
-            player1_error = True
-            self.reduce_score("player1", "timeout")
-        except Exception as e:
-            print(e)
-            self.__player1_feedback = Feedback("error", e)
-            player1_error = True
-            self.reduce_score("player1", "error")
+            player1_error = False
+            player2_error = False
 
-        try:
-            print(self.__player_timeout)
-            player2_action = func_timeout(self.__player_timeout, self.__player2.bot, args=(player2_state,))
-        except FunctionTimedOut:
-            self.__player2_feedback = Feedback("timeout")
-            player2_error = True
-            self.reduce_score("player2", "timeout")
-        except Exception as e:
-            print(e)
-            self.__player2_feedback = Feedback("error", e)
-            player2_error = True
-            self.reduce_score("player2", "error")
+            player1_action = None
+            player2_action = None
 
-        print(player1_action, player2_action)
-        self.execute_action(player1_action, player2_action, player1_error, player2_error)
-        self.__rounds += 1
+            try:
+                sio.emit('action', data=player1_state.json(), to=self.get_player1().get_socket_id())
+                print("Player 1 sent action")
+                # player1_action = sio.call("action", to=self.get_player1().get_socket_id(), data=player1_state.json(),
+                #                           timeout=self.__player_timeout)
+                print("Player 1 Action: ", player1_action, type(player1_action))
+                player1_action = Action.get_obj_from_json(player1_action)
+                # player1_action = func_timeout(self.__player_timeout, self.__player1.bot, args=(player1_state,))
+            except TimeoutError:
+                self.__player1_feedback = Feedback("timeout")
+                player1_error = True
+                self.reduce_score("player1", "timeout")
+            except Exception as e:
+                print(e)
+                self.__player1_feedback = Feedback("error", e)
+                player1_error = True
+                self.reduce_score("player1", "error")
+
+            try:
+                player2_action = sio.call("action", to=self.get_player2().get_socket_id(), data=player2_state.json(),
+                                          timeout=self.__player_timeout)
+                print("Player 2 Action: ", player2_action.type(player2_action))
+                player2_action = Action.get_obj_from_json(player2_action)
+                # player2_action = func_timeout(self.__player_timeout, self.__player2.bot, args=(player2_state,))
+            except TimeoutError:
+                self.__player2_feedback = Feedback("timeout")
+                player2_error = True
+                self.reduce_score("player2", "timeout")
+            except Exception as e:
+                print(e)
+                self.__player2_feedback = Feedback("error", e)
+                player2_error = True
+                self.reduce_score("player2", "error")
+
+            # print(player1_action, player2_action)
+            self.execute_action(player1_action, player2_action, player1_error, player2_error)
+            self.__rounds += 1
 
         return True
 
@@ -302,8 +348,7 @@ class Environment:
                 guardian.set_coordinates(player1_action.get_target(self.__graph))
                 guardian.get_coordinates().add_guardian_to_cell(guardian)
 
-
-            elif (player1_action.get_action_type == "Attack"):
+            elif player1_action.get_action_type == "Attack":
                 guardians_present = player1_action.get_target().get_guardians_present()
                 our_guadian = player1_action.get_guardian()
                 for guardian in guardians_present:

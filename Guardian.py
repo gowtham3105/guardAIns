@@ -3,14 +3,6 @@
 
 
 class Guardian:
-    health = 0
-    attack_damage = 0
-    vision = 0
-    speed = 0
-    cooldown = 0
-    belongs_to_player = None
-    is_alive = 0
-    coordinates = None
 
     def __init__(self, belongs, init_coordinates, alive=True):
         self.belongs_to_player = belongs

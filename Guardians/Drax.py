@@ -16,7 +16,7 @@ class Drax(Guardian):
 
     def special_ability(self):
         # See Through Walls, upto range one,
-        #  behind a wall can be seen
+        # behind a wall can be seen
         return 0
 
     def __repr__(self):

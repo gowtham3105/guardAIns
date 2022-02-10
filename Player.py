@@ -23,9 +23,11 @@ class Player:
                    'StarLord': None
                    }
 
-    def __init__(self, pid, base_coord: Cell):
-        self.player_id = pid
-        self.base_coordinates = base_coord
+    def __init__(self, pid, sid, base_coord: Cell):
+        self.__player_id = pid,
+        self.__socket_id = sid
+        self.__connected = True
+        self.__base_coordinates = base_coord
         self.gamora = Gamora(self, base_coord, True)
         self.__guardians['Gamora'] = self.gamora
         self.rocket = Rocket(self, base_coord, True)
@@ -48,3 +50,21 @@ class Player:
         # return the action object
         action = Action("MOVE", 'Gamora', (0, 1), 'player1', 'secret')
         return action
+
+    def get_player_id(self):
+        return self.__player_id
+
+    def get_socket_id(self):
+        return self.__socket_id
+
+    def set_player_id(self, player_id):
+        self.__player_id = player_id
+
+    def set_socket_id(self, socket_id):
+        self.__socket_id = socket_id
+
+    def is_connected(self):
+        return self.__connected
+
+    def set_connected(self, connected):
+        self.__connected = connected

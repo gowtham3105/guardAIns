@@ -33,3 +33,10 @@ class Feedback:
 
     def get_data(self) -> str:
         return self.__data
+
+    def json(self) -> dict:
+        return {
+            "code": self.__feedback_code,
+            "message": self.__feedback_message,
+            "data": self.__data
+        }

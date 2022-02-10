@@ -1,9 +1,9 @@
 class Cell:
-    def __init__(self, coordinates):
+    def __init__(self, coordinates, guardian_present=[], neighbour_cells=[], cell_type="Normal"):
         self.__coordinates = coordinates
-        self.__guardian_present = []  # This should have the guardian sub class object of the guardian present in the cell
-        self.__neighbour_cells = []
-        self.__cell_type = 'Normal'
+        self.__guardian_present = guardian_present  # This should have the guardian sub class object of the guardian present in the cell
+        self.__neighbour_cells = neighbour_cells
+        self.__cell_type = cell_type
 
     def add_neighbour_cell(self, cell: 'Cell'):
         if cell not in self.__neighbour_cells:
@@ -33,6 +33,9 @@ class Cell:
 
     def get_cell_type(self):
         return self.__cell_type
+
+    def remove_neighbours(self):
+        self.__neighbour_cells = []
 
     def __str__(self) -> str:
         return str(self.__coordinates)
