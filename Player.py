@@ -28,16 +28,11 @@ class Player:
         self.__socket_id = sid
         self.__connected = True
         self.__base_coordinates = base_coord
-        self.gamora = Gamora(self, base_coord, True)
-        self.__guardians['Gamora'] = self.gamora
-        self.rocket = Rocket(self, base_coord, True)
-        self.__guardians['Rocket'] = self.rocket
-        self.groot = Groot(self, base_coord, True)
-        self.__guardians['Groot'] = self.groot
-        self.drax = Drax(self, base_coord, True)
-        self.__guardians['Drax'] = self.drax
-        self.star_lord = StarLord(self, base_coord, True)
-        self.__guardians['StarLord'] = self.star_lord
+        self.__guardians['Gamora'] = Gamora(self, base_coord, True)
+        self.__guardians['Rocket'] = Rocket(self, base_coord, True)
+        self.__guardians['Groot'] = Groot(self, base_coord, True)
+        self.__guardians['Drax'] = Drax(self, base_coord, True)
+        self.__guardians['StarLord'] = StarLord(self, base_coord, True)
 
     def get_guardian_by_type(self, guardian_type: str):
         if guardian_type in self.__guardians:

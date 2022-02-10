@@ -6,6 +6,10 @@ from datetime import datetime
 import eventlet
 import socketio
 
+from Action import Action
+
+eventlet.monkey_patch()
+
 from Environment import Environment
 from Player import Player
 
@@ -85,7 +89,7 @@ def main():
     print(time.time())
     print(start_time - time.time())
     start_time = time.time() + 10
-    env = Environment(ROOM_ID, start_time, 20, 20, 30, 1, 1, )
+    env = Environment(ROOM_ID, start_time, 20, 20, 30, 1, 0, )
     env.create_graph()
 
     env.print_graph()
@@ -97,6 +101,19 @@ def main():
 
     update_rounds = threading.Thread(target=env.update_rounds, args=(sio,))
     update_rounds.start()
+
+    @sio.event
+    def action(sid, data):
+        if sid == env.get_player1().get_socket_id():
+            print("player1 action")
+            env.add_action_to_player1(Action.get_obj_from_json(data))
+        elif sid == env.get_player2().get_socket_id():
+            print('Player 2 action')
+            env.add_action_to_player2(Action.get_obj_from_json(data))
+        else:
+            print('invalid user')
+
+        print(sid, data, type(data))
 
     @sio.on('connect')
     def connect(sid, environ):
@@ -173,7 +190,6 @@ def main():
             print("disconnecting unknown player")
 
     # start the server
-    # app.run(host='', port=8000)
 
     eventlet.wsgi.server(eventlet.listen(('', 8000)), app)
 

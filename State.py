@@ -2,10 +2,10 @@ from Cells.Cell import Cell
 
 
 class State:
-    def __init__(self, movegen: dict, feedback, penality_score) -> None:
+    def __init__(self, movegen: dict, feedback, penalty_score, round_no) -> None:
         self.__feedback = feedback
-        self.__penality_score = penality_score
-        print(movegen)
+        self.__penalty_score = penalty_score
+        self.__round_no = round_no
         # Copy movegen  to avoid reference
 
         temp_movgen = {}
@@ -36,7 +36,7 @@ class State:
         return self.__feedback
 
     def get_penality_score(self):
-        return self.__penality_score
+        return self.__penalty_score
 
     def json(self):
         movegen_as_json = {}
@@ -52,5 +52,6 @@ class State:
         return {
             "movegen": movegen_as_json,
             "feedback": self.__feedback.json() if self.__feedback else None,
-            "penality_score": self.__penality_score
+            "penalty_score": self.__penalty_score,
+            "round_no": self.__round_no
         }

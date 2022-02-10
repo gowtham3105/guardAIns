@@ -89,6 +89,12 @@ class Environment:
     def get_winner(self):
         return self.__winner
 
+    def add_action_to_player1(self, action: Action) -> None:
+        self.__player1_actions.append(action)
+
+    def add_action_to_player2(self, action: Action) -> None:
+        self.__player2_actions.append(action)
+
     def create_graph(self) -> None:
 
         matrix = []
@@ -228,13 +234,13 @@ class Environment:
         return return_dict
 
     def update_rounds(self, sio):
-        print("Updating rounds")
         while self.get_start_time() - time.time() > 0:
             print("Time left: ", self.get_start_time() - time.time())
             time.sleep(1)
 
         print('Starting Update Rounds')
         print(self.get_player1(), self.get_player2())
+
         if self.get_player1() is None:
             if self.get_player2() is None:
                 # both players are dead
@@ -273,11 +279,14 @@ class Environment:
             if self.__max_rounds < self.__rounds:  # If Max Rounds is reached
                 self.__winner = None
                 self.__game_over = True
+                print(self.get_player1().get_guardians())
+                print(self.get_player2().get_guardians())
+                print("Game Over")
                 return True
             player1_state = State(self.movegen(self.get_player1()), self.__player1_feedback,
-                                  self.__player1_penality_score)
+                                  self.__player1_penality_score, self.get_rounds())
             player2_state = State(self.movegen(self.get_player2()), self.__player2_feedback,
-                                  self.__player2_penality_score)
+                                  self.__player2_penality_score, self.get_rounds())
 
             player1_error = False
             player2_error = False
@@ -286,13 +295,16 @@ class Environment:
             player2_action = None
 
             try:
-                sio.emit('action', data=player1_state.json(), to=self.get_player1().get_socket_id())
-                print("Player 1 sent action")
-                # player1_action = sio.call("action", to=self.get_player1().get_socket_id(), data=player1_state.json(),
-                #                           timeout=self.__player_timeout)
+                sio.call("action", to=self.get_player1().get_socket_id(), data=player1_state.json(),
+                         timeout=self.__player_timeout)
+                if len(self.__player1_actions):
+                    player1_action = self.__player1_actions[-1]
+                    if player1_action.get_round_no() != self.get_rounds():
+                        raise RuntimeError("Player 1 Action Data Inconsistent")
+
+                else:
+                    raise RuntimeError('Player 1 Action Not found')
                 print("Player 1 Action: ", player1_action, type(player1_action))
-                player1_action = Action.get_obj_from_json(player1_action)
-                # player1_action = func_timeout(self.__player_timeout, self.__player1.bot, args=(player1_state,))
             except TimeoutError:
                 self.__player1_feedback = Feedback("timeout")
                 player1_error = True
@@ -304,11 +316,15 @@ class Environment:
                 self.reduce_score("player1", "error")
 
             try:
-                player2_action = sio.call("action", to=self.get_player2().get_socket_id(), data=player2_state.json(),
-                                          timeout=self.__player_timeout)
-                print("Player 2 Action: ", player2_action.type(player2_action))
-                player2_action = Action.get_obj_from_json(player2_action)
-                # player2_action = func_timeout(self.__player_timeout, self.__player2.bot, args=(player2_state,))
+                sio.call("action", to=self.get_player2().get_socket_id(), data=player2_state.json(),
+                         timeout=self.__player_timeout)
+                if len(self.__player2_actions):
+                    player2_action = self.__player2_actions[-1]
+                    if player2_action.get_round_no() != self.get_rounds():
+                        raise RuntimeError("Player 2 Action Data Inconsistent")
+                else:
+                    raise RuntimeError('Player 2 Action Not found')
+                print("Player 2 Action: ", player2_action, type(player2_action))
             except TimeoutError:
                 self.__player2_feedback = Feedback("timeout")
                 player2_error = True
@@ -330,6 +346,8 @@ class Environment:
         return True
 
     def execute_action(self, player1_action: Action, player2_action: Action, player1_error: bool, player2_error: bool):
+        print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
+        print("no pro")
         player1_error = False
         player2_error = False
         if not self.validate_action(player1_action):
@@ -344,8 +362,14 @@ class Environment:
                 guardian = self.__player1.get_guardian_by_type(
                     player1_action.get_guardian_type())  # update it to return
                 # guardian object directly
+                print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
+                print("Here")
                 guardian.get_coordinates().remove_guardian_from_cell(guardian)
+                print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
+                print("Here11")
                 guardian.set_coordinates(player1_action.get_target(self.__graph))
+                print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
+
                 guardian.get_coordinates().add_guardian_to_cell(guardian)
 
             elif player1_action.get_action_type == "Attack":
