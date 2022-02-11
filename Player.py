@@ -24,15 +24,22 @@ class Player:
                    }
 
     def __init__(self, pid, sid, base_coord: Cell):
-        self.__player_id = pid,
+        self.__player_id = pid
         self.__socket_id = sid
         self.__connected = True
         self.__base_coordinates = base_coord
+        base_coord.add_guardian_to_cell(self.get_guardian_by_type('Gamora'))
         self.__guardians['Gamora'] = Gamora(self, base_coord, True)
         self.__guardians['Rocket'] = Rocket(self, base_coord, True)
         self.__guardians['Groot'] = Groot(self, base_coord, True)
         self.__guardians['Drax'] = Drax(self, base_coord, True)
         self.__guardians['StarLord'] = StarLord(self, base_coord, True)
+
+        self.__base_coordinates.add_guardian_to_cell(self.get_guardian_by_type('Gamora'))
+        self.__base_coordinates.add_guardian_to_cell(self.get_guardian_by_type('Rocket'))
+        self.__base_coordinates.add_guardian_to_cell(self.get_guardian_by_type('Groot'))
+        self.__base_coordinates.add_guardian_to_cell(self.get_guardian_by_type('Drax'))
+        self.__base_coordinates.add_guardian_to_cell(self.get_guardian_by_type('StarLord'))
 
     def get_guardian_by_type(self, guardian_type: str):
         if guardian_type in self.__guardians:

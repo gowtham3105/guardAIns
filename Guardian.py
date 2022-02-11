@@ -7,7 +7,7 @@ class Guardian:
     def __init__(self, belongs, init_coordinates, alive=True):
         self.belongs_to_player = belongs
         self.coordinates = init_coordinates
-        self.is_alive = alive
+        self.__is_alive = alive
 
     def attack(self, cell):
         # check if cell has an enemy i.e guardian from opposite team
@@ -20,7 +20,10 @@ class Guardian:
 
     def mark_as_dead(self, alive=False):
         # marks a player as dead
-        self.is_alive = False
+        self.__is_alive = False
+
+    def is_alive(self):
+        return self.__is_alive
 
     def set_coordinates(self, coordinates):
         self.coordinates = coordinates

@@ -119,61 +119,62 @@ def main():
     def connect(sid, environ):
         global rooms
         print("connect ", sid)
-        # print(environ['HTTP_AUTH'], type(environ['HTTP_AUTH']))
-
-        if 'HTTP_AUTH' in environ:
-            auth_details = json.loads(environ['HTTP_AUTH'])
-        else:
+        try:
             auth_details = None
-            print("no auth details")
-            sio.disconnect(sid)
-            return False
+            if 'HTTP_AUTH' in environ:
+                auth_details = json.loads(environ['HTTP_AUTH'])
+            else:
+                print("No Auth Details")
+                sio.disconnect(sid)
+                return False
 
-        print(auth_details)
-        if auth_details['room'] in rooms.keys():
-            if auth_details['player_id'] == rooms[auth_details['room']]['player1']['player_id']:
-                if auth_details['password'] == rooms[auth_details['room']]['player1']['password']:
-                    if env.get_player1() is None:
-                        env.set_player1(Player(auth_details['player_id'], sid, env.get_graph()[0][0]))
-                        print("player1 connected")
-                    else:
-                        if not env.get_player1().is_connected():
-                            env.get_player1().set_player_id(sid)
-                            env.get_player1().set_connected(True)
-                            print("player1 reconnected")
+            print(auth_details)
+            if auth_details['room'] in rooms.keys():
+                if auth_details['player_id'] == rooms[auth_details['room']]['player1']['player_id']:
+                    if auth_details['password'] == rooms[auth_details['room']]['player1']['password']:
+                        if env.get_player1() is None:
+                            env.set_player1(Player(auth_details['player_id'], sid, env.get_graph()[0][0]))
+                            print("player1 connected")
                         else:
-                            print("player1 already connected")
-                else:
-                    print("wrong password for player1")
-                    sio.disconnect(sid)
-                    return False
-            elif auth_details['player_id'] == rooms[auth_details['room']]['player2']['player_id']:
-                if auth_details['password'] == rooms[auth_details['room']]['player2']['password']:
-                    if env.get_player2() is None:
-                        env.set_player2(Player(auth_details['player_id'], sid, env.get_graph()[0][0]))
-                        print("player2 connected")
-                    elif not env.get_player2().is_connected():
-                        env.get_player2().set_player_id(sid)
-                        env.get_player2().set_connected(True)
-                        print("player2 reconnected")
+                            if not env.get_player1().is_connected():
+                                env.get_player1().set_socket_id(sid)
+                                env.get_player1().set_connected(True)
+                                print("player1 reconnected")
+                            else:
+                                print("player1 already connected")
                     else:
-                        print("player2 already connected")
+                        print("wrong password for player1")
+                        sio.disconnect(sid)
+                        return False
+                elif auth_details['player_id'] == rooms[auth_details['room']]['player2']['player_id']:
+                    if auth_details['password'] == rooms[auth_details['room']]['player2']['password']:
+                        if env.get_player2() is None:
+                            env.set_player2(Player(auth_details['player_id'], sid, env.get_graph()[0][0]))
+                            print("player2 connected")
+                        elif not env.get_player2().is_connected():
+                            env.get_player2().set_socket_id(sid)
+                            env.get_player2().set_connected(True)
+                            print("player2 reconnected")
+                        else:
+                            print("player2 already connected")
+                    else:
+                        print("wrong password for player2")
+                        sio.disconnect(sid)
+                        return False
                 else:
-                    print("wrong password for player2")
+                    print("wrong username")
                     sio.disconnect(sid)
                     return False
             else:
-                print("wrong username")
+                print("wrong room")
                 sio.disconnect(sid)
                 return False
-        else:
-            print("wrong room")
+        except Exception as e:
+            print(e)
             sio.disconnect(sid)
-            # print all connected users to the socket
-
             return False
 
-        sio.emit('my_response', {'data': 'Connected'})
+        sio.emit('connected', {'data': 'Connected'})
 
     @sio.on('disconnect')
     def disconnect(sid):

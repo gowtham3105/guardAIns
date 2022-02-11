@@ -7,7 +7,7 @@ from Guardian import Guardian
 
 class Groot(Guardian):
     def __init__(self, belongs, init_coordinates: Cell, alive=True):
-        self.health = 200
+        self.__health = 200
         self.attack_damage = 25
         self.vision = 2
         self.speed = 1
@@ -18,6 +18,21 @@ class Groot(Guardian):
         # Call this in updation of each round
         # and increase health by 5
         return 0
+
+    def get_health(self):
+        return self.__health
+
+    def set_health(self, health):
+        self.__health = health
+        if self.__health < 0:
+            self.__health = 0
+        elif self.__health > 200:
+            self.__health = 200
+
+        if self.__health <= 0:
+            self.mark_as_dead()
+
+        return self.__health
 
     def __repr__(self):
         return "Groot" + self.coordinates.__repr__()

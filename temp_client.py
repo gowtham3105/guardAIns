@@ -42,7 +42,7 @@ def action(state):
 
 
 @sio.event
-def my_response(data):
+def connected(data):
     print("Response:", data)
 
 

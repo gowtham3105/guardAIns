@@ -47,6 +47,9 @@ class Action:
     def get_target(self, graph) -> tuple:
         return graph[self.__target[0]][self.__target[1]]
 
+    def get_target_coordinates(self) -> tuple:
+        return self.__target
+
     def set_action_type(self, action_type: str) -> None:
         self.__action_type = action_type
 

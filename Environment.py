@@ -266,21 +266,31 @@ class Environment:
             if self.__player1_penality_score < 0 <= self.__player2_penality_score:  # player 2 wins
                 self.__winner = self.__player2
                 self.__game_over = True
+                print("Player 2 is the Winner")
                 return True
             if self.__player2_penality_score < 0 <= self.__player1_penality_score:  # player 1 wins
                 self.__winner = self.__player1
                 self.__game_over = True
+                print("Player 1 is the Winner")
                 return True
             if self.__player1_penality_score < 0 and self.__player2_penality_score < 0:  # draw
                 self.__winner = None
                 self.__game_over = True
+                print("Draw")
                 return True
 
             if self.__max_rounds < self.__rounds:  # If Max Rounds is reached
-                self.__winner = None
+                if self.get_player1_penality_score() > self.get_player2_penality_score():
+                    self.__winner = self.__player1
+                    print("Player 1 is the Winner")
+                elif self.get_player1_penality_score() < self.get_player2_penality_score():
+                    self.__winner = self.__player2
+                    print("Player 2 is the Winner")
+                else:
+                    self.__winner = None
+                    print("Draw")
                 self.__game_over = True
-                print(self.get_player1().get_guardians())
-                print(self.get_player2().get_guardians())
+
                 print("Game Over")
                 return True
             player1_state = State(self.movegen(self.get_player1()), self.__player1_feedback,
@@ -301,19 +311,18 @@ class Environment:
                     player1_action = self.__player1_actions[-1]
                     if player1_action.get_round_no() != self.get_rounds():
                         raise RuntimeError("Player 1 Action Data Inconsistent")
-
                 else:
                     raise RuntimeError('Player 1 Action Not found')
                 print("Player 1 Action: ", player1_action, type(player1_action))
             except TimeoutError:
                 self.__player1_feedback = Feedback("timeout")
                 player1_error = True
-                self.reduce_score("player1", "timeout")
+                self.reduce_score(self.get_player1().get_player_id(), "timeout")
             except Exception as e:
                 print(e)
                 self.__player1_feedback = Feedback("error", e)
                 player1_error = True
-                self.reduce_score("player1", "error")
+                self.reduce_score(self.get_player1().get_player_id(), "error")
 
             try:
                 sio.call("action", to=self.get_player2().get_socket_id(), data=player2_state.json(),
@@ -328,12 +337,12 @@ class Environment:
             except TimeoutError:
                 self.__player2_feedback = Feedback("timeout")
                 player2_error = True
-                self.reduce_score("player2", "timeout")
+                self.reduce_score(self.get_player2().get_player_id(), "timeout")
             except Exception as e:
                 print(e)
                 self.__player2_feedback = Feedback("error", e)
                 player2_error = True
-                self.reduce_score("player2", "error")
+                self.reduce_score(self.get_player2().get_player_id(), "error")
 
             # print(player1_action, player2_action)
             self.execute_action(player1_action, player2_action, player1_error, player2_error)
@@ -343,20 +352,64 @@ class Environment:
 
     def validate_action(self, action: Action) -> bool:
         # Always check if the acting guardian is alive or not
-        return True
+        if action is None:
+            print("Action is None")
+            return False
+
+        player = action.get_player_id()
+        if player == self.get_player1().get_player_id():
+            guardian = self.__player1.get_guardian_by_type(action.get_guardian_type())
+        elif player == self.get_player2().get_player_id():
+            guardian = self.__player2.get_guardian_by_type(action.get_guardian_type())
+        else:
+            guardian = None
+
+        if guardian is not None:
+            if guardian.is_alive():
+                if action.get_action_type() == "ATTACK":
+                    if ((guardian.coordinates.get_coordinates()[0] - guardian.vision) <=
+                        action.get_target_coordinates()[0] <=
+                        (guardian.coordinates.get_coordinates()[0] + guardian.vison)) and (
+                            guardian.coordinates.get_coordinates()[1] - guardian.vision <=
+                            action.get_target_coordinates()[1] <=
+                            guardian.coordinates.get_coordinates()[1] + guardian.vision):
+                        return True
+                    print("Target out of range")
+                    return False
+                elif action.get_action_type() == "MOVE":
+                    if ((guardian.coordinates.get_coordinates()[0] - guardian.speed) <= action.get_target_coordinates()[
+                        0] <=
+                        (guardian.coordinates.get_coordinates()[0] + guardian.speed)) and (
+                            guardian.coordinates.get_coordinates()[1] - guardian.speed <=
+                            action.get_target_coordinates()[1] <=
+                            guardian.coordinates.get_coordinates()[1] + guardian.speed):
+                        return True
+                    print("Target out of range MOVE")
+                    return False
+                elif action.get_action_type() == "SPECIAL":
+                    # check all parameters for special actions once it is updated
+                    return True
+            else:
+                print("Guardian is dead")
+                return False
+        else:
+            print("Guardian not found")
+            return False
 
     def execute_action(self, player1_action: Action, player2_action: Action, player1_error: bool, player2_error: bool):
         print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
-        print("no pro")
         player1_error = False
         player2_error = False
         if not self.validate_action(player1_action):
             player1_error = True
-            self.reduce_score("player1", 'invalid_action')
+            self.reduce_score(self.get_player1().get_player_id(), 'invalid_action')
+            print("player1", self.get_player1_penality_score())
         if not self.validate_action(player2_action):
             player2_error = True
-            self.reduce_score("player2", 'invalid_action')
+            self.reduce_score(self.get_player2().get_player_id(), 'invalid_action')
+            print("player2", self.get_player2_penality_score())
 
+        print(player1_error, player2_error, "errors execute action")
         if not player1_error:
             if player1_action.get_action_type() == "MOVE":
                 guardian = self.__player1.get_guardian_by_type(
@@ -399,14 +452,13 @@ class Environment:
             "error": -2,
             "invalid_action": -2,
         }
-        players = {
-            "player1": self.__player1_penality_score,
-            "player2": self.__player1_penality_score
-        }
+
         if feedback_code in FEEDBACKS_CODES.keys():
-            if player in players:
-                players[player] += FEEDBACKS_CODES[feedback_code]
+            if player == self.get_player1().get_player_id():
+                self.__player1_penality_score += FEEDBACKS_CODES[feedback_code]
+            elif player == self.get_player2().get_player_id():
+                self.__player2_penality_score += FEEDBACKS_CODES[feedback_code]
             else:
-                raise ValueError("Invalid player name")
+                raise Exception("Invalid player id")
         else:
             raise ValueError("Invalid feedback code")
