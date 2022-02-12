@@ -26,7 +26,7 @@ class Cell:
         if guardian in self.__guardian_present:
             self.__guardian_present.remove(guardian)
         else:
-            # raise(ValueError("Guardian not present in the cell"))
+            raise (ValueError("Guardian not present in the cell"))
             print("Guardian not found in the cell")
 
     def get_guardians_present(self):  # Returns a list of __guardians present in the cell

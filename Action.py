@@ -5,7 +5,7 @@ class Action:
     MOVE = "MOVE"
     ATTACK = "ATTACK"
     SPECIAL = "SPECIAL"
-    INTERACT = "INTERACT"
+    # INTERACT = "INTERACT"
     TROOPS = ('Groot', 'Rocket', 'Gamora', 'StarLord', 'Drax')
 
     @classmethod

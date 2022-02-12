@@ -27,16 +27,27 @@ def connect():
 def action(state):
     print('State: ', state)
     print(type(state))
-    target = (0, 1) if PLAYER_ID == 'player1' else (1, 0)
-    action = {
-        "action_type": 'MOVE',
-        "troop": "Gamora",
-        'target': target,
-        'player_id': PLAYER_ID,
-        'player_password': PLAYER_PASSWORD,
-        'round_no': state['round_no']
+    target = (0, 1) if PLAYER_ID == 'player1' else (10, 0)
+    if PLAYER_ID == 'player1':
+        action = {
+            "action_type": 'MOVE',
+            "troop": "Gamora",
+            'target': target,
+            'player_id': PLAYER_ID,
+            'player_password': PLAYER_PASSWORD,
+            'round_no': state['round_no']
 
-    }
+        }
+    else:
+        action = {
+            "action_type": 'ATTACK',
+            "troop": "Gamora",
+            'target': target,
+            'player_id': PLAYER_ID,
+            'player_password': PLAYER_PASSWORD,
+            'round_no': state['round_no']
+
+        }
 
     sio.emit('action', action)
 

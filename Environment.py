@@ -3,6 +3,7 @@ import time
 
 from Action import Action
 from Cells.Cell import Cell
+from Cells.HealPoint import HealPoint
 from Cells.Teleporter import Teleporter
 # from Cells.Cell import Cell
 from Feedback import Feedback
@@ -190,8 +191,12 @@ class Environment:
         for i in range(no_of_teleporters):
             x = random.randint(0, self.__width - 1)
             y = random.randint(0, self.__height - 1)
-            self.__graph[0][0] = Teleporter(self.__graph[0][0])
-            pass
+            self.__graph[y][x] = Teleporter(self.__graph[0][0])
+
+        for i in range(no_of_healpoints):
+            x = random.randint(0, self.__width - 1)
+            y = random.randint(0, self.__height - 1)
+            self.__graph[y][x] = HealPoint(self.__graph[0][0])
 
     def movegen(self, player: Player) -> dict:
         # sent as input for the player object, it contains the neighboring cells,
