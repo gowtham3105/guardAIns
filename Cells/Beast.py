@@ -15,7 +15,7 @@ class Beast(Clue):
                 self.__rounds_left -= 1
             for guardian in self.get_guardians_present():
                 if guardian.belongs_to_player == player:
-                    guardian.set_health(guardian.get_health() - self.__damage)
+                    guardian.set_health(guardian.get_health() - 25)
             if self.__rounds_left == 0:
                 self.__is_alive = False
                 self.is_clue_active = False
