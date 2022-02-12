@@ -191,8 +191,8 @@ class Environment:
             self.__winner = self.__player1
             return True
 
-        player1_state = State(self.movegen(self.__player1), self.__player1_feedback, self.__player1_penality_score)
-        player2_state = State(self.movegen(self.__player2), self.__player2_feedback, self.__player2_penality_score)
+        player1_state = State(self.movegen(self.__player1), self.__player1_feedback, self.__player1_penality_score, player=self.___player1)
+        player2_state = State(self.movegen(self.__player2), self.__player2_feedback, self.__player2_penality_score, player=self.___player2)
 
         player1_error = False
         player2_error = False

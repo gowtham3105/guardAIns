@@ -10,11 +10,11 @@ from State import State
 class Player:
     player_id = 0
     base_coordinates = None
-    gamora = None
-    rocket = None
-    groot = None
-    drax = None
-    star_lord = None
+    gamora:Gamora = None
+    rocket:Rocket = None
+    groot:Groot = None
+    drax:Drax = None
+    star_lord:StarLord = None
     guardians = {'gamora': None,
                  'drax': None,
                  'rocket': None,

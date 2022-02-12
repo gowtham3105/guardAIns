@@ -29,5 +29,8 @@ class Guardian:
     def mark_as_dead(self, alive=False):
         # marks a player as dead
         self.is_alive = False
+        self.coordinates.set_guardian_present(self.coordinates.get_guardians_present().remove(self))
+
     def set_coordinates(self, coordinates: Cell):
+
         self.coordinates = coordinates
