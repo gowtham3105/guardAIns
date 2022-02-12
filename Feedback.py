@@ -17,13 +17,41 @@ class Feedback:
             "code": "YOU_HAVE_BEEN_ATTACKED",
             "message": "You have been attacked, Your Troops health is decreased by this."
         },
+        "guardian_died": {
+            "code": "GUARDIAN_DEAD",
+            "message": "Guardian is dead, Your Score is decreased by this."
+        },
+        'attack_success': {
+            'code': 'ATTACK_SUCCESS',
+            'message': 'Attack Success'
+        },
+        "teleport_success": {
+            "code": "TELEPORT_SUCCESS",
+            "message": "Teleport Success"
+        },
+        "infinity_stone_moved": {
+            "code": "INFINITY_STONE_MOVED",
+            "message": "Infinity Stone moved"
+        },
+        "infinity_stone_dropped": {
+            "code": "INFINITY_STONE_DROPPED",
+            "message": "Infinity Stone dropped"
+        },
+        "infinity_stone_picked_up": {
+            "code": "INFINITY_STONE_PICKED_UP",
+            "message": "Infinity Stone picked up"
+        },
 
     }
 
-    def __init__(self, feedback_code, data=None) -> None:
+    def __init__(self, feedback_code, data={}) -> None:
         self.__feedback_code = self.feedbacks[feedback_code]["code"]
         self.__feedback_message = self.feedbacks[feedback_code]["message"]
-        self.__data = str(data) if data is not None else None
+        if type(data) is dict:
+            self.__data = data
+        else:
+            raise TypeError("Data must be a dictionary")
+            self.__data = {}
 
     def get_feedback_code(self) -> str:
         return self.__feedback_code
@@ -33,3 +61,24 @@ class Feedback:
 
     def get_data(self) -> str:
         return self.__data
+
+    def set_data(self, data) -> None:
+        if type(data) is dict:
+            self.__data = data
+            return True
+        else:
+            raise TypeError("Data must be a dictionary")
+            return False
+
+    def json(self) -> dict:
+        return {
+            "code": self.__feedback_code,
+            "message": self.__feedback_message,
+            "data": self.__data
+        }
+
+    def __str__(self) -> str:
+        return f"Feedback( {self.__feedback_code} )"
+
+    def __repr__(self) -> str:
+        return f"Feedback( {self.__feedback_code} )"

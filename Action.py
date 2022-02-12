@@ -1,53 +1,74 @@
-import re
-from Guardians.Drax import Drax
-from Guardians.Gamora import Gamora
-from Guardians.Groot import Groot
-from Guardians.Rocket import Rocket
-from Guardians.StarLord import StarLord
-from Player import Player
-from Cell import Cell
 
 class Action:
-    #UPDATE ACTION TO SEND the acting players, drax, gamora.. objects directly with get_guardian(), 
-    #and update get_coordinate to send cell object directly
+    # UPDATE ACTION TO SEND the acting players, drax, gamora.. objects directly with get_guardian(),
+    # and update get_coordinate to send cell object directly
     MOVE = "MOVE"
     ATTACK = "ATTACK"
     SPECIAL = "SPECIAL"
-    TROOPS = (Groot, Rocket, Gamora, StarLord, Drax)
+    # INTERACT = "INTERACT"
+    TROOPS = ('Groot', 'Rocket', 'Gamora', 'StarLord', 'Drax')
 
-    def __init__(self, action_type, troop: TROOPS, target_coordianates:Cell, acting_player:Player) -> None:
+    @classmethod
+    def get_obj_from_json(cls, json_data: dict):
+        try:
+            action_type = json_data["action_type"]
+            troop = json_data["troop"]
+            # tuple str to tuple
+            target = tuple(json_data["target"])
+            player_id = json_data["player_id"]
+            player_password = json_data["player_password"]
+            round_no = json_data['round_no']
+            return cls(action_type, troop, target, round_no, player_id, player_password)
+        except KeyError:
+            print("KeyError: Invalid json data", json_data)
+            return False
+        except Exception as e:
+            print("Exception: Invalid json data", e)
+            print("Unexpected error", json_data)
+            return False
+
+    def __init__(self, action_type, troop, target_coordinates: tuple, round_no, player_id, player_password) -> None:
         if action_type in (Action.MOVE, Action.ATTACK, Action.SPECIAL):
             self.__action_type = action_type
 
-        if isinstance(troop, Action.TROOPS):
+        if troop in Action.TROOPS:
             self.__troop = troop
+        else:
+            print("Invalid troop:", troop)
 
-        self.__target = target_coordianates
+        self.__target = target_coordinates
         self.__is_valid = False
-        self.acting_player = acting_player
+        self.__round_no = round_no
+        self.__player_id = player_id
+        self.__player_password = player_password
 
     def get_action_type(self) -> str:
         return self.__action_type
 
-    def get_troop(self) -> TROOPS:
+    def get_guardian_type(self):
         return self.__troop
 
-    def get_guardian(self):
-        if(self.__troop == TROOPS[0]):
-            return self.acting_player.groot
-        elif(self.__troop == TROOPS[1]):
-            return self.acting_player.rocket
-        elif(self.__troop == TROOPS[2]):
-            return self.acting_player.gamora
-        elif(self.__troop == TROOPS[3]):
-            return self.acting_player.star_lord
-        elif(self.__troop == TROOPS[4]):
-            return self.acting_player.drax
+    def get_target(self, graph) -> tuple:
+        return graph[self.__target[0]][self.__target[1]]
 
-
-
-    def get_target(self) -> tuple:
+    def get_target_coordinates(self) -> tuple:
         return self.__target
 
     def set_action_type(self, action_type: str) -> None:
         self.__action_type = action_type
+
+    def get_player_id(self):
+        return self.__player_id
+
+    def get_round_no(self):
+        return self.__round_no
+
+    def json(self) -> dict:
+        return {
+            "action_type": self.__action_type,
+            "troop": self.__troop,
+            "target": list(self.__target),
+            "player_id": self.__player_id,
+            # "player_password": self.__player_password,
+            "round_no": self.__round_no
+        }

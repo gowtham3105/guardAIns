@@ -1,23 +1,16 @@
-from Cell import Cell
+# from Cells.Cell import Cell
 # from Player import Player
-
+from Feedback import Feedback
 
 class Guardian:
-    health = 0
-    attack_damage = 0
-    vision = 0
-    speed = 0
-    cooldown = 0
-    belongs_to_player = None
-    is_alive = 0
-    coordinates = None
 
-    def __init__(self, belongs, init_coordinates: Cell, alive=True):
+    def __init__(self, belongs, init_coordinates, alive=True):
         self.belongs_to_player = belongs
         self.coordinates = init_coordinates
-        self.is_alive = alive
+        self.__is_alive = alive
+        self.__died_at = None
 
-    def attack(self, cell: Cell):
+    def attack(self, cell):
         # check if cell has an enemy i.e guardian from opposite team
         # update health
         return 0
@@ -26,8 +19,24 @@ class Guardian:
         # called from environment, cold own is updated after every round
         return 0
 
-    def mark_as_dead(self, alive=False):
+    def mark_as_dead(self, round_no):
         # marks a player as dead
-        self.is_alive = False
-    def set_coordinates(self, coordinates: Cell):
+        self.__is_alive = False
+        self.__died_at = round_no
+
+        return Feedback("guardian_died", {"coordinates": self.coordinates})
+
+    def is_alive(self):
+        return self.__is_alive
+
+    def set_coordinates(self, coordinates):
         self.coordinates = coordinates
+
+    def get_coordinates(self):
+        return self.coordinates
+
+    def get_belongs_to_player(self):
+        return self.belongs_to_player
+
+    def get_died_at(self):
+        return self.__died_at
