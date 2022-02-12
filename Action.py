@@ -13,7 +13,8 @@ class Action:
         try:
             action_type = json_data["action_type"]
             troop = json_data["troop"]
-            target = json_data["target"]
+            # tuple str to tuple
+            target = tuple(json_data["target"])
             player_id = json_data["player_id"]
             player_password = json_data["player_password"]
             round_no = json_data['round_no']
@@ -21,7 +22,8 @@ class Action:
         except KeyError:
             print("KeyError: Invalid json data", json_data)
             return False
-        except:
+        except Exception as e:
+            print("Exception: Invalid json data", e)
             print("Unexpected error", json_data)
             return False
 
@@ -65,8 +67,8 @@ class Action:
         return {
             "action_type": self.__action_type,
             "troop": self.__troop,
-            "target": self.__target,
+            "target": list(self.__target),
             "player_id": self.__player_id,
-            "player_password": self.__player_password,
+            # "player_password": self.__player_password,
             "round_no": self.__round_no
         }

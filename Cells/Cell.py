@@ -25,12 +25,9 @@ class Cell:
             raise (ValueError("Invalid cell type"))
 
     def add_neighbour_cell(self, cell: 'Cell'):
-        print("Adding neighbour cell", cell)
-        print("Neighbour cells before", self.__neighbour_cells)
         if cell not in self.__neighbour_cells:
             self.__neighbour_cells.append(cell)
 
-        print("Neighbour cells after", self.__neighbour_cells)
 
     def get_neighbour_cells(self):
         return self.__neighbour_cells

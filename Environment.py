@@ -9,21 +9,20 @@ from Cells.HealPoint import HealPoint
 from Cells.Teleporter import Teleporter
 # from Cells.Cell import Cell
 from Feedback import Feedback
+from InfinityStone import InfinityStone
 from Player import Player
 from State import State
 
 
 class Environment:
-    def __init__(self, room_id, start_time, height, width, max_penality_score, player_timeout, max_rounds) -> None:
+    def __init__(self, room_id, start_time, height, width, max_penalty_score, player_timeout, max_rounds) -> None:
         self.__env = {'__name__': 'GuardAIns', '__version__': '0.1'}
         self.__room_id = room_id
         self.__start_time = start_time
         self.__graph = None
         self.__rounds = 0
-        self.__currentState = None
         self.__player1_feedback = []
         self.__player2_feedback = []
-        self.__currentActions = []
         self.__player1 = None
         self.__player2 = None
         self.__width = width
@@ -31,12 +30,14 @@ class Environment:
         self.__printable_matrix = None
         self.__player1_actions = []
         self.__player2_actions = []
-        self.__player1_penality_score = max_penality_score
-        self.__player2_penality_score = max_penality_score
+        self.__player1_penalty_score = max_penalty_score
+        self.__player2_penalty_score = max_penalty_score
+        self.__max_penalty_score = max_penalty_score
         self.__player_timeout = player_timeout
         self.__winner = None
         self.__game_over = False
         self.__max_rounds = max_rounds
+        self.__infinity_stone = None
 
     def get_env(self):
         return self.__env
@@ -84,10 +85,10 @@ class Environment:
         return self.__player2_actions
 
     def get_player1_penality_score(self):
-        return self.__player1_penality_score
+        return self.__player1_penalty_score
 
     def get_player2_penality_score(self):
-        return self.__player2_penality_score
+        return self.__player2_penalty_score
 
     def get_winner(self):
         return self.__winner
@@ -216,8 +217,10 @@ class Environment:
                 x = random.randint(0, self.__width - 1)
                 y = random.randint(0, self.__height - 1)
 
+            print("Teleporter placed at: ", y, x)
+
             if self.__graph[y][x].get_cell_type() == 'Normal':
-                self.__graph[y][x] = Teleporter(self.__graph[0][0])
+                self.__graph[y][x] = Teleporter(self.__graph[y][x])
 
         for i in range(no_of_healpoints):
             x = random.randint(0, self.__width - 1)
@@ -227,8 +230,10 @@ class Environment:
                 x = random.randint(0, self.__width - 1)
                 y = random.randint(0, self.__height - 1)
 
+            print("Healpoint placed at: ", y, x)
+
             if self.__graph[y][x].get_cell_type() == 'Normal':
-                self.__graph[y][x] = HealPoint(self.__graph[0][0])
+                self.__graph[y][x] = HealPoint(self.__graph[y][x])
 
         for i in range(no_of_clues):
             x = random.randint(0, self.__width - 1)
@@ -238,8 +243,10 @@ class Environment:
                 x = random.randint(0, self.__width - 1)
                 y = random.randint(0, self.__height - 1)
 
+            print("Clue placed at: ", y, x)
+
             if self.__graph[y][x].get_cell_type() == 'Normal':
-                self.__graph[y][x] = Clue(self.__graph[0][0])
+                self.__graph[y][x] = Clue(self.__graph[y][x])
 
         for i in range(no_of_beasts):
             x = random.randint(0, self.__width - 1)
@@ -249,8 +256,21 @@ class Environment:
                 x = random.randint(0, self.__width - 1)
                 y = random.randint(0, self.__height - 1)
 
+            print("Beast placed at: ", y, x)
+
             if self.__graph[y][x].get_cell_type() == 'Normal':
-                self.__graph[y][x] = Beast(self.__graph[0][0])
+                self.__graph[y][x] = Beast(self.__graph[y][x])
+
+        x = random.randint(0, self.__width - 1)
+        y = random.randint(0, self.__height - 1)
+
+        while self.__graph[y][x].get_cell_type() != 'Normal':
+            x = random.randint(0, self.__width - 1)
+            y = random.randint(0, self.__height - 1)
+
+        print("Infinity Stone placed at: ", y, x)
+        power_stone = InfinityStone(self.get_graph()[y][x])
+        self.__infinity_stone = power_stone
 
         return True
 
@@ -296,7 +316,9 @@ class Environment:
 
     def update_rounds(self, sio):
         while self.get_start_time() - time.time() > 0:
-            print("Time left: ", self.get_start_time() - time.time())
+            print('Game Starts in ' + str(self.get_start_time() - time.time()) + " seconds")
+            sio.emit('game_status', 'Game Starts in ' + str(self.get_start_time() - time.time()) + " seconds")
+
             time.sleep(1)
 
         print('Starting Update Rounds')
@@ -314,6 +336,7 @@ class Environment:
                 self.__winner = self.get_player2()
                 self.__game_over = True
                 print("Player 2 is the Winner")
+                sio.emit('game_status', 'Player 2 is the Winner')
                 return True
         else:
             if self.get_player2() is None:
@@ -321,43 +344,81 @@ class Environment:
                 self.__winner = self.get_player1()
                 self.__game_over = True
                 print("Player 1 is the Winner")
+                sio.emit('game_status', 'Player 1 is the Winner')
                 return True
 
         while True:
-            if self.__player1_penality_score < 0 <= self.__player2_penality_score:  # player 2 wins
+            if self.__infinity_stone:
+                if self.__infinity_stone.get_coordinates() == self.get_player1().get_base_coordinates():
+                    self.__winner = self.get_player1()
+                    self.__game_over = True
+                    self.__infinity_stone.set_returned_to_base(True)
+                    print("Player 1 is the Winner")
+                    sio.emit('game_status', 'Player 1 is the Winner')
+                    return True
+                if self.__infinity_stone.get_coordinates() == self.get_player2().get_base_coordinates():
+                    self.__winner = self.get_player2()
+                    self.__game_over = True
+                    self.__infinity_stone.set_returned_to_base(True)
+                    print("Player 2 is the Winner")
+                    sio.emit('game_status', 'Player 2 is the Winner')
+                    return True
+            if self.__player1_penalty_score < 0 <= self.__player2_penalty_score:  # player 2 wins
                 self.__winner = self.__player2
                 self.__game_over = True
                 print("Player 2 is the Winner")
+                sio.emit('game_status', 'Player 2 is the Winner')
                 return True
-            if self.__player2_penality_score < 0 <= self.__player1_penality_score:  # player 1 wins
+            if self.__player2_penalty_score < 0 <= self.__player1_penalty_score:  # player 1 wins
                 self.__winner = self.__player1
                 self.__game_over = True
                 print("Player 1 is the Winner")
+                sio.emit('game_status', 'Player 1 is the Winner')
                 return True
-            if self.__player1_penality_score < 0 and self.__player2_penality_score < 0:  # draw
-                self.__winner = None
-                self.__game_over = True
-                print("Draw")
-                return True
+            if self.__player1_penalty_score < 0 and self.__player2_penalty_score < 0:  # draw
+                winner = self.evaluate_draw()
+                if winner is self.__player1:
+                    self.__winner = self.__player1
+                    self.__game_over = True
+                    print("Player 1 is the Winner")
+                    sio.emit('game_status', 'Player 1 is the Winner')
+                    return True
+                elif winner is self.__player2:
+                    self.__winner = self.__player2
+                    self.__game_over = True
+                    print("Player 2 is the Winner")
+                    sio.emit('game_status', 'Player 2 is the Winner')
+                    return True
+                else:
+                    self.__winner = None
+                    self.__game_over = True
+                    print("Draw")
+                    sio.emit('game_status', 'Draw')
+                    return True
 
             if self.__max_rounds < self.__rounds:  # If Max Rounds is reached
-                if self.get_player1_penality_score() > self.get_player2_penality_score():
-                    self.__winner = self.__player1
+                winner = self.evaluate_draw()
+                if winner == self.get_player1():
+                    self.__winner = self.get_player1()
                     print("Player 1 is the Winner")
-                elif self.get_player1_penality_score() < self.get_player2_penality_score():
-                    self.__winner = self.__player2
+                    sio.emit('game_status', 'Player 1 is the Winner')
+                elif winner == self.get_player2():
+                    self.__winner = self.get_player2()
                     print("Player 2 is the Winner")
+                    sio.emit('game_status', 'Player 2 is the Winner')
                 else:
                     self.__winner = None
                     print("Draw")
-                self.__game_over = True
+                    sio.emit('game_status', 'Game is a Draw')
 
                 print("Game Over")
+                sio.emit('game_status', 'Game Over')
                 return True
+
             player1_state = State(self.movegen(self.get_player1()), self.__player1_feedback,
-                                  self.__player1_penality_score, self.get_rounds())
+                                  self.__player1_penalty_score, self.get_rounds())
             player2_state = State(self.movegen(self.get_player2()), self.__player2_feedback,
-                                  self.__player2_penality_score, self.get_rounds())
+                                  self.__player2_penalty_score, self.get_rounds())
 
             player1_error = False
             player2_error = False
@@ -366,59 +427,107 @@ class Environment:
             player2_action = None
 
             self.__player1_feedback = []
-            try:
-                sio.call("action", to=self.get_player1().get_socket_id(), data=player1_state.json(),
-                         timeout=self.__player_timeout)
-                if len(self.__player1_actions):
-                    player1_action = self.__player1_actions[-1]
-                    if player1_action.get_round_no() != self.get_rounds():
-                        raise RuntimeError("Player 1 Action Data Inconsistent")
-                else:
-                    raise RuntimeError('Player 1 Action Not found')
-                print("Player 1 Action: ", player1_action.json())
-            except TimeoutError:
-                self.add_player1_feedback(Feedback("timeout"))
+            if self.get_player1().is_connected():
+                try:
+                    sio.call("action", to=self.get_player1().get_socket_id(), data=player1_state.json(),
+                             timeout=self.__player_timeout)
+                    if len(self.__player1_actions):
+                        player1_action = self.__player1_actions[-1]
+                        if player1_action.get_round_no() != self.get_rounds():
+                            raise RuntimeError("Player 1 Action Data Inconsistent")
+                    else:
+                        raise RuntimeError('Player 1 Action Not found')
+                    print("Player 1 Action: ", player1_action.json())
+                except TimeoutError:
+                    self.add_player1_feedback(Feedback("timeout"))
+                    player1_error = True
+                    self.reduce_score(self.get_player1().get_player_id(), "timeout")
+                except Exception as e:
+                    print(e)
+                    self.add_player1_feedback(Feedback("error", {"error": str(e)}))
+                    player1_error = True
+                    self.reduce_score(self.get_player1().get_player_id(), "error")
+            else:
                 player1_error = True
-                self.reduce_score(self.get_player1().get_player_id(), "timeout")
-            except Exception as e:
-                print(e)
-                self.add_player1_feedback(Feedback("error", {"error": str(e)}))
-                player1_error = True
-                self.reduce_score(self.get_player1().get_player_id(), "error")
 
             self.__player2_feedback = []
-            try:
-                sio.call("action", to=self.get_player2().get_socket_id(), data=player2_state.json(),
-                         timeout=self.__player_timeout)
+            if self.get_player2().is_connected():
+                try:
+                    sio.call("action", to=self.get_player2().get_socket_id(), data=player2_state.json(),
+                             timeout=self.__player_timeout)
 
-                if len(self.__player2_actions):
-                    player2_action = self.__player2_actions[-1]
-                    if player2_action.get_round_no() != self.get_rounds():
-                        raise RuntimeError("Player 2 Action Data Inconsistent")
-                else:
-                    raise RuntimeError('Player 2 Action Not found')
-                print("Player 2 Action: ", player2_action.json())
+                    if len(self.__player2_actions):
+                        player2_action = self.__player2_actions[-1]
+                        if player2_action.get_round_no() != self.get_rounds():
+                            raise RuntimeError("Player 2 Action Data Inconsistent")
+                    else:
+                        raise RuntimeError('Player 2 Action Not found')
+                    print("Player 2 Action: ", player2_action.json())
 
-            except TimeoutError:
-                self.add_player2_feedback(Feedback("timeout"))
+                except TimeoutError:
+                    self.add_player2_feedback(Feedback("timeout"))
+                    player2_error = True
+                    self.reduce_score(self.get_player2().get_player_id(), "timeout")
+                except Exception as e:
+                    print(e)
+                    self.add_player2_feedback(Feedback("error", {'error': str(e)}))
+                    player2_error = True
+                    self.reduce_score(self.get_player2().get_player_id(), "error")
+            else:
                 player2_error = True
-                self.reduce_score(self.get_player2().get_player_id(), "timeout")
-            except Exception as e:
-                print(e)
-                self.add_player2_feedback(Feedback("error", {'error': str(e)}))
-                player2_error = True
-                self.reduce_score(self.get_player2().get_player_id(), "error")
 
             # print(player1_action, player2_action)
             self.execute_action(player1_action, player2_action, player1_error, player2_error)
+            if self.__infinity_stone:
+                feedback, feedback_to_player, player_id = self.__infinity_stone.update_coordinates()
+                if feedback:
+                    self.add_player1_feedback(feedback)
+                    self.add_player2_feedback(feedback)
+                    if player_id == self.get_player1().get_player_id():
+                        self.add_player1_feedback(feedback_to_player)
+                    elif player_id == self.get_player2().get_player_id():
+                        self.add_player2_feedback(feedback_to_player)
+                    else:
+                        raise RuntimeError("Invalid Player ID")
+
+            for troop in self.get_player1().get_guardians().values():
+                if troop.get_coordinates().get_cell_type() == Cell.Teleporter:
+                    dest = troop.get_coordinates().generate_destination(self.__infinity_stone, self.get_graph())
+                    if dest.get_cell_type() == Cell.Normal:
+                        troop.get_coordinates().remove_guardian_from_cell(troop)
+                        troop.set_coordinates(dest)
+                        troop.get_coordinates().add_guardian_to_cell(troop)
+
+                        new_cell = Cell(dest.get_coordinates(), dest.get_guardians_present(),
+                                        dest.get_neighbour_cells(), Cell.Normal)
+                        self.__graph[dest.get_coordinates()[1]][dest.get_coordinates()[0]] = new_cell
+                        self.add_player1_feedback(Feedback("teleport_success", {"coordinates": dest.get_coordinates(),
+                                                                                "guardian": troop.get_type()}))
+
+            for troop in self.get_player2().get_guardians().values():
+                if troop.get_coordinates().get_cell_type() == Cell.Teleporter:
+                    dest = troop.get_coordinates().generate_destination(self.__infinity_stone, self.get_graph())
+                    if dest.get_cell_type() == Cell.Normal:
+                        troop.get_coordinates().remove_guardian_from_cell(troop)
+                        troop.set_coordinates(dest)
+                        troop.get_coordinates().add_guardian_to_cell(troop)
+
+                        new_cell = Cell(dest.get_coordinates(), dest.get_guardians_present(),
+                                        dest.get_neighbour_cells(), Cell.Normal)
+                        self.__graph[dest.get_coordinates()[1]][dest.get_coordinates()[0]] = new_cell
+                        self.add_player2_feedback(Feedback("teleport_success", {"coordinates": dest.get_coordinates(),
+                                                                                "guardian": troop.get_type()}))
+
             self.__rounds += 1
+
             print("Round: ", self.__rounds)
-            print("Player 1 Score: ", self.get_player1_penality_score())
-            print("Player 2 Score: ", self.get_player2_penality_score())
-            print("Player 1 Feedback: ", self.__player1_feedback)
-            print("Player 2 Feedback: ", self.__player2_feedback)
-            print("player 1 Guardians: ", self.get_player1().get_guardians())
-            print("player 2 Guardians: ", self.get_player2().get_guardians())
+            time.sleep(1)
+            # print("Player 1 Score: ", self.get_player1_penality_score())
+            # print("Player 2 Score: ", self.get_player2_penality_score())
+            # print("Player 1 Feedback: ", self.__player1_feedback)
+            # print("Player 2 Feedback: ", self.__player2_feedback)
+            # print("player 1 Guardians: ", self.get_player1().get_guardians())
+            # print("player 2 Guardians: ", self.get_player2().get_guardians())
 
         return True
 
@@ -439,8 +548,7 @@ class Environment:
         if guardian is not None:
             if guardian.is_alive():
                 if action.get_action_type() == "ATTACK":
-                    print(guardian.coordinates.get_coordinates(), guardian.get_vision(),
-                          action.get_target_coordinates())
+
                     if ((guardian.coordinates.get_coordinates()[0] - guardian.get_vision()) <=
                         action.get_target_coordinates()[0] <=
                         (guardian.coordinates.get_coordinates()[0] + guardian.get_vision())) and (
@@ -470,28 +578,25 @@ class Environment:
                     # check all parameters for special actions once it is updated
                     return True
             else:
-                if player == self.get_player1().get_player_id():
-                    self.__player1_feedback.append(Feedback("guardian_died"))
-                elif player == self.get_player2().get_player_id():
-                    self.__player2_feedback.append(Feedback("guardian_died"))
                 print("Guardian is dead")
                 return False
         else:
-
             print("Guardian not found")
             return False
 
     def execute_action(self, player1_action: Action, player2_action: Action, player1_error: bool, player2_error: bool):
-        print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
+        # print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
 
-        if not player1_error and not self.validate_action(player1_action):
-            player1_error = True
-            self.reduce_score(self.get_player1().get_player_id(), 'invalid_action')
-            print("player1", self.get_player1_penality_score())
-        if not player2_error and not self.validate_action(player2_action):
-            player2_error = True
-            self.reduce_score(self.get_player2().get_player_id(), 'invalid_action')
-            print("player2", self.get_player2_penality_score())
+        if not player1_error:
+            if not self.validate_action(player1_action):
+                player1_error = True
+                self.add_player1_feedback(Feedback("invalid_action"))
+                self.reduce_score(self.get_player1().get_player_id(), 'invalid_action')
+        if not player2_error:
+            if not self.validate_action(player2_action):
+                player2_error = True
+                self.add_player2_feedback(Feedback("invalid_action"))
+                self.reduce_score(self.get_player2().get_player_id(), 'invalid_action')
 
         print(player1_error, player2_error, "errors execute action")
         if not player1_error:
@@ -502,16 +607,6 @@ class Environment:
                 guardian.get_coordinates().remove_guardian_from_cell(guardian)
                 guardian.set_coordinates(player1_action.get_target(self.__graph))
                 guardian.get_coordinates().add_guardian_to_cell(guardian)
-                print("Target Cell: ", guardian.get_coordinates().get_coordinates(), self
-                      .__player1.get_guardian_by_type(
-                    player1_action.get_guardian_type()).get_coordinates().get_coordinates())
-
-                print("Cell Guardian: ", guardian.get_coordinates().get_guardians_present(),
-                      len(guardian.get_coordinates().get_guardians_present()))
-                print(self.get_graph()[guardian.get_coordinates().get_coordinates()[0]][
-                          guardian.get_coordinates().get_coordinates()[1]].get_guardians_present(), len(
-                    self.get_graph()[guardian.get_coordinates().get_coordinates()[0]][
-                        guardian.get_coordinates().get_coordinates()[1]].get_guardians_present()))
 
         if not player2_error:
             if player2_action.get_action_type() == Action.MOVE:
@@ -534,7 +629,8 @@ class Environment:
                         # for __guardians present would be empty
                         if guardian.get_belongs_to_player() == self.__player2:
                             # update get_troop to return guardian object after checking if the guardian is not dead
-                            feedback = guardian.set_health(guardian.get_health() - our_guardian.get_attack_damage())
+                            feedback = guardian.set_health(guardian.get_health() - our_guardian.get_attack_damage(),
+                                                           self.get_rounds())
                             if feedback:
                                 feedback.set_data({"attacker_type": our_guardian.get_type(),
                                                    'victim_type': guardian.get_type()})
@@ -547,23 +643,19 @@ class Environment:
                                                                 "victim_type": guardian.get_type()}))
 
         if not player2_error:
-            print("player2 action type is ", player2_action.get_action_type())
-            print(Action.ATTACK, Action.ATTACK == player2_action.get_action_type())
             if player2_action.get_action_type() == Action.ATTACK:
 
                 guardians_present = player2_action.get_target(self.get_graph()).get_guardians_present()
                 our_guardian = self.__player2.get_guardian_by_type(
                     player2_action.get_guardian_type())
-                print("guardians present", guardians_present)
-                print("our guardian", our_guardian)
-                print("here")
                 if guardians_present and our_guardian:
                     for guardian in guardians_present:
                         # if multiple enemy __guardians are present then attack all, if none of them are there then
                         # for __guardians present would be empty
                         if guardian.get_belongs_to_player() == self.__player1:
                             # update get_troop to return guardian object after checking if the guardian is not dead
-                            feedback = guardian.set_health(guardian.get_health() - our_guardian.get_attack_damage())
+                            feedback = guardian.set_health(guardian.get_health() - our_guardian.get_attack_damage(),
+                                                           self.get_rounds())
                             if feedback:
                                 feedback.set_data({"attacker_type": our_guardian.get_type(),
                                                    'victim_type': guardian.get_type()})
@@ -576,7 +668,7 @@ class Environment:
                                                                {"attacker": our_guardian.get_type(),
                                                                 "victim_type": guardian.get_type()}))
 
-            elif (player1_action.get_action_type == "Special"):
+            elif player1_action.get_action_type == "Special":
                 player1_action.get_guardian().special_ability()  # since we are getting the guradian object corresponding to the sub class, we can directly call the special ability
 
         return True
@@ -591,10 +683,50 @@ class Environment:
 
         if feedback_code in FEEDBACKS_CODES.keys():
             if player == self.get_player1().get_player_id():
-                self.__player1_penality_score += FEEDBACKS_CODES[feedback_code]
+                self.__player1_penalty_score += FEEDBACKS_CODES[feedback_code]
             elif player == self.get_player2().get_player_id():
-                self.__player2_penality_score += FEEDBACKS_CODES[feedback_code]
+                self.__player2_penalty_score += FEEDBACKS_CODES[feedback_code]
             else:
                 raise Exception("Invalid player id")
         else:
             raise ValueError("Invalid feedback code")
+
+    def evaluate_draw(self):
+        print("Evaluating draw")
+        reduced_score_player1 = (self.__player1_penalty_score / self.__max_penalty_score) * 0.5
+        reduced_score_player2 = (self.__player2_penalty_score / self.__max_penalty_score) * 0.5
+
+        time_alive = 0
+        for guardian in self.__player1.get_guardians().values():
+            if guardian.is_alive():
+                time_alive += self.__rounds
+            else:
+                died_at = guardian.get_died_at()
+                if died_at:
+                    time_alive += died_at
+                else:
+                    raise (Exception("Guardian died at is not set, but is dead"))
+
+        reduced_score_player1 += (time_alive / (self.__rounds * 5)) * 0.5
+
+        time_alive = 0
+        for guardian in self.__player2.get_guardians().values():
+            if guardian.is_alive():
+                time_alive += self.__rounds
+            else:
+                died_at = guardian.get_died_at()
+                if not died_at:
+                    time_alive += guardian.get_died_at()
+                else:
+                    raise (Exception("Guardian died at is not set, but is dead"))
+
+        reduced_score_player2 += (time_alive / (self.__rounds * 5)) * 0.5
+
+        print("Reduced score player 1: ", reduced_score_player1)
+        print("Reduced score player 2: ", reduced_score_player2)
+        if reduced_score_player1 > reduced_score_player2:
+            return self.__player1
+        elif reduced_score_player1 < reduced_score_player2:
+            return self.__player2
+        else:
+            return None

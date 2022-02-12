@@ -8,6 +8,7 @@ class Guardian:
         self.belongs_to_player = belongs
         self.coordinates = init_coordinates
         self.__is_alive = alive
+        self.__died_at = None
 
     def attack(self, cell):
         # check if cell has an enemy i.e guardian from opposite team
@@ -18,9 +19,11 @@ class Guardian:
         # called from environment, cold own is updated after every round
         return 0
 
-    def mark_as_dead(self, alive=False):
+    def mark_as_dead(self, round_no):
         # marks a player as dead
         self.__is_alive = False
+        self.__died_at = round_no
+
         return Feedback("guardian_died", {"coordinates": self.coordinates})
 
     def is_alive(self):
@@ -34,3 +37,6 @@ class Guardian:
 
     def get_belongs_to_player(self):
         return self.belongs_to_player
+
+    def get_died_at(self):
+        return self.__died_at

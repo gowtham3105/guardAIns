@@ -25,6 +25,22 @@ class Feedback:
             'code': 'ATTACK_SUCCESS',
             'message': 'Attack Success'
         },
+        "teleport_success": {
+            "code": "TELEPORT_SUCCESS",
+            "message": "Teleport Success"
+        },
+        "infinity_stone_moved": {
+            "code": "INFINITY_STONE_MOVED",
+            "message": "Infinity Stone moved"
+        },
+        "infinity_stone_dropped": {
+            "code": "INFINITY_STONE_DROPPED",
+            "message": "Infinity Stone dropped"
+        },
+        "infinity_stone_picked_up": {
+            "code": "INFINITY_STONE_PICKED_UP",
+            "message": "Infinity Stone picked up"
+        },
 
     }
 

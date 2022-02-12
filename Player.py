@@ -58,6 +58,8 @@ class Player:
         self.__player_id = player_id
 
     def set_socket_id(self, socket_id):
+        if socket_id is None:
+            self.set_connected(False)
         self.__socket_id = socket_id
 
     def is_connected(self):
@@ -65,3 +67,6 @@ class Player:
 
     def set_connected(self, connected):
         self.__connected = connected
+
+    def get_base_coordinates(self):
+        return self.__base_coordinates

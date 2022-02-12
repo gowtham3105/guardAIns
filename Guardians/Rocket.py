@@ -21,7 +21,7 @@ class Rocket(Guardian):
     def get_health(self):
         return self.__health
 
-    def set_health(self, health):
+    def set_health(self, health, round_no):
         if self.is_alive():
             self.__health = health
             if self.__health < 0:
@@ -30,7 +30,7 @@ class Rocket(Guardian):
                 self.__health = 75
 
             if self.__health <= 0:
-                return self.mark_as_dead()
+                return self.mark_as_dead(round_no)
             return None
         return None
 
