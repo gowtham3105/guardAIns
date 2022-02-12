@@ -1,6 +1,6 @@
 # from Cells.Cell import Cell
 # from Player import Player
-
+from Feedback import Feedback
 
 class Guardian:
 
@@ -21,6 +21,7 @@ class Guardian:
     def mark_as_dead(self, alive=False):
         # marks a player as dead
         self.__is_alive = False
+        return Feedback("guardian_died", {"coordinates": self.coordinates})
 
     def is_alive(self):
         return self.__is_alive
@@ -30,3 +31,6 @@ class Guardian:
 
     def get_coordinates(self):
         return self.coordinates
+
+    def get_belongs_to_player(self):
+        return self.belongs_to_player

@@ -15,8 +15,8 @@ class State:
             for cell_list in troop:
                 side = []
                 for cell in cell_list:
-                    new_cell = Cell(cell.get_coordinates(), cell.get_guardians_present(),
-                                    cell.get_neighbour_cells(), cell.get_cell_type())
+                    new_cell = Cell(cell.get_coordinates(), cell.get_guardians_present(), cell.get_neighbour_cells(),
+                                    cell.get_cell_type())
                     side.append(new_cell)
                 neighbours.append(side)
             temp_movgen[troop_name] = neighbours
@@ -49,9 +49,13 @@ class State:
                 neighbours.append(side)
             movegen_as_json[troop_name] = neighbours
 
+        feedback_as_json = []
+        for feed in self.__feedback:
+            feedback_as_json.append(feed.json())
+
         return {
             "movegen": movegen_as_json,
-            "feedback": self.__feedback.json() if self.__feedback else None,
+            "feedback": feedback_as_json,
             "penalty_score": self.__penalty_score,
             "round_no": self.__round_no
         }

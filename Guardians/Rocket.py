@@ -8,10 +8,10 @@ from Guardian import Guardian
 class Rocket(Guardian):
     def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.__health = 75
-        self.attack_damage = 35
-        self.vision = 4
-        self.speed = 3
-        self.cooldown = None
+        self.__attack_damage = 35
+        self.__vision = 4
+        self.__speed = 3
+        self.__cooldown = 0
         super().__init__(belongs, init_coordinates, alive)
 
     def special_ability(self):
@@ -22,16 +22,39 @@ class Rocket(Guardian):
         return self.__health
 
     def set_health(self, health):
-        self.__health = health
-        if self.__health < 0:
-            self.__health = 0
-        elif self.__health > 75:
-            self.__health = 75
+        if self.is_alive():
+            self.__health = health
+            if self.__health < 0:
+                self.__health = 0
+            elif self.__health > 75:
+                self.__health = 75
 
-        if self.__health <= 0:
-            self.mark_as_dead()
+            if self.__health <= 0:
+                return self.mark_as_dead()
+            return None
+        return None
 
-        return self.__health
+    def get_attack_damage(self):
+        return self.__attack_damage
+
+    def get_vision(self):
+        return self.__vision
+
+    def get_speed(self):
+        return self.__speed
+
+    def get_cooldown(self):
+        return self.__cooldown
+
+    def set_cooldown(self):
+        self.__cooldown = 0
+
+    def update_cooldown(self):
+        if self.__cooldown > 0:
+            self.__cooldown -= 1
+
+    def get_type(self):
+        return "Rocket"
 
     def __repr__(self):
-        return "Rocket" + self.coordinates.__repr__()
+        return "Rocket( " + self.coordinates.__repr__() + " " + str(self.__health) + " " + str(self.__cooldown) + " )"

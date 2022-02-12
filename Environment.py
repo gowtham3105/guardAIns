@@ -2,7 +2,9 @@ import random
 import time
 
 from Action import Action
+from Cells.Beast import Beast
 from Cells.Cell import Cell
+from Cells.Clue import Clue
 from Cells.HealPoint import HealPoint
 from Cells.Teleporter import Teleporter
 # from Cells.Cell import Cell
@@ -19,8 +21,8 @@ class Environment:
         self.__graph = None
         self.__rounds = 0
         self.__currentState = None
-        self.__player1_feedback = None
-        self.__player2_feedback = None
+        self.__player1_feedback = []
+        self.__player2_feedback = []
         self.__currentActions = []
         self.__player1 = None
         self.__player2 = None
@@ -95,6 +97,18 @@ class Environment:
 
     def add_action_to_player2(self, action: Action) -> None:
         self.__player2_actions.append(action)
+
+    def get_player1_feedbacks(self):
+        return self.__player1_feedback
+
+    def get_player2_feedbacks(self):
+        return self.__player2_feedback
+
+    def add_player1_feedback(self, feedback: Feedback) -> None:
+        self.__player1_feedback.append(feedback)
+
+    def add_player2_feedback(self, feedback: Feedback) -> None:
+        self.__player2_feedback.append(feedback)
 
     def create_graph(self) -> None:
 
@@ -188,15 +202,57 @@ class Environment:
             return False
 
     def place_special_cells(self, no_of_teleporters, no_of_healpoints, no_of_clues, no_of_beasts):
+
+        if no_of_teleporters + no_of_healpoints + no_of_clues + no_of_beasts > self.__width * self.__height:
+            print("Not enough cells to place all the special cells")
+            raise RuntimeError("Not enough cells to place all the special cells")
+            return False
+
         for i in range(no_of_teleporters):
             x = random.randint(0, self.__width - 1)
             y = random.randint(0, self.__height - 1)
-            self.__graph[y][x] = Teleporter(self.__graph[0][0])
+
+            while self.__graph[y][x].get_cell_type() != 'Normal':
+                x = random.randint(0, self.__width - 1)
+                y = random.randint(0, self.__height - 1)
+
+            if self.__graph[y][x].get_cell_type() == 'Normal':
+                self.__graph[y][x] = Teleporter(self.__graph[0][0])
 
         for i in range(no_of_healpoints):
             x = random.randint(0, self.__width - 1)
             y = random.randint(0, self.__height - 1)
-            self.__graph[y][x] = HealPoint(self.__graph[0][0])
+
+            while self.__graph[y][x].get_cell_type() != 'Normal':
+                x = random.randint(0, self.__width - 1)
+                y = random.randint(0, self.__height - 1)
+
+            if self.__graph[y][x].get_cell_type() == 'Normal':
+                self.__graph[y][x] = HealPoint(self.__graph[0][0])
+
+        for i in range(no_of_clues):
+            x = random.randint(0, self.__width - 1)
+            y = random.randint(0, self.__height - 1)
+
+            while self.__graph[y][x].get_cell_type() != 'Normal':
+                x = random.randint(0, self.__width - 1)
+                y = random.randint(0, self.__height - 1)
+
+            if self.__graph[y][x].get_cell_type() == 'Normal':
+                self.__graph[y][x] = Clue(self.__graph[0][0])
+
+        for i in range(no_of_beasts):
+            x = random.randint(0, self.__width - 1)
+            y = random.randint(0, self.__height - 1)
+
+            while self.__graph[y][x].get_cell_type() != 'Normal':
+                x = random.randint(0, self.__width - 1)
+                y = random.randint(0, self.__height - 1)
+
+            if self.__graph[y][x].get_cell_type() == 'Normal':
+                self.__graph[y][x] = Beast(self.__graph[0][0])
+
+        return True
 
     def movegen(self, player: Player) -> dict:
         # sent as input for the player object, it contains the neighboring cells,
@@ -223,7 +279,7 @@ class Environment:
 
                 else:
                     dir_hor = i - 2  # dir_hor = -1 or 1
-                for x in range(1, current_guardian_obj.vision + 1):
+                for x in range(1, current_guardian_obj.get_vision() + 1):
                     possible_neighbour = (
                         current_coordinates[0] + dir_ver * x, current_coordinates[1] + dir_hor * x)
                     if possible_neighbour[0] < 0 or possible_neighbour[0] >= self.__height or possible_neighbour[
@@ -309,6 +365,7 @@ class Environment:
             player1_action = None
             player2_action = None
 
+            self.__player1_feedback = []
             try:
                 sio.call("action", to=self.get_player1().get_socket_id(), data=player1_state.json(),
                          timeout=self.__player_timeout)
@@ -318,40 +375,50 @@ class Environment:
                         raise RuntimeError("Player 1 Action Data Inconsistent")
                 else:
                     raise RuntimeError('Player 1 Action Not found')
-                print("Player 1 Action: ", player1_action, type(player1_action))
+                print("Player 1 Action: ", player1_action.json())
             except TimeoutError:
-                self.__player1_feedback = Feedback("timeout")
+                self.add_player1_feedback(Feedback("timeout"))
                 player1_error = True
                 self.reduce_score(self.get_player1().get_player_id(), "timeout")
             except Exception as e:
                 print(e)
-                self.__player1_feedback = Feedback("error", e)
+                self.add_player1_feedback(Feedback("error", {"error": str(e)}))
                 player1_error = True
                 self.reduce_score(self.get_player1().get_player_id(), "error")
 
+            self.__player2_feedback = []
             try:
                 sio.call("action", to=self.get_player2().get_socket_id(), data=player2_state.json(),
                          timeout=self.__player_timeout)
+
                 if len(self.__player2_actions):
                     player2_action = self.__player2_actions[-1]
                     if player2_action.get_round_no() != self.get_rounds():
                         raise RuntimeError("Player 2 Action Data Inconsistent")
                 else:
                     raise RuntimeError('Player 2 Action Not found')
-                print("Player 2 Action: ", player2_action, type(player2_action))
+                print("Player 2 Action: ", player2_action.json())
+
             except TimeoutError:
-                self.__player2_feedback = Feedback("timeout")
+                self.add_player2_feedback(Feedback("timeout"))
                 player2_error = True
                 self.reduce_score(self.get_player2().get_player_id(), "timeout")
             except Exception as e:
                 print(e)
-                self.__player2_feedback = Feedback("error", e)
+                self.add_player2_feedback(Feedback("error", {'error': str(e)}))
                 player2_error = True
                 self.reduce_score(self.get_player2().get_player_id(), "error")
 
             # print(player1_action, player2_action)
             self.execute_action(player1_action, player2_action, player1_error, player2_error)
             self.__rounds += 1
+            print("Round: ", self.__rounds)
+            print("Player 1 Score: ", self.get_player1_penality_score())
+            print("Player 2 Score: ", self.get_player2_penality_score())
+            print("Player 1 Feedback: ", self.__player1_feedback)
+            print("Player 2 Feedback: ", self.__player2_feedback)
+            print("player 1 Guardians: ", self.get_player1().get_guardians())
+            print("player 2 Guardians: ", self.get_player2().get_guardians())
 
         return True
 
@@ -372,22 +439,30 @@ class Environment:
         if guardian is not None:
             if guardian.is_alive():
                 if action.get_action_type() == "ATTACK":
-                    if ((guardian.coordinates.get_coordinates()[0] - guardian.vision) <=
+                    print(guardian.coordinates.get_coordinates(), guardian.get_vision(),
+                          action.get_target_coordinates())
+                    if ((guardian.coordinates.get_coordinates()[0] - guardian.get_vision()) <=
                         action.get_target_coordinates()[0] <=
-                        (guardian.coordinates.get_coordinates()[0] + guardian.vison)) and (
-                            guardian.coordinates.get_coordinates()[1] - guardian.vision <=
+                        (guardian.coordinates.get_coordinates()[0] + guardian.get_vision())) and (
+                            guardian.coordinates.get_coordinates()[1] - guardian.get_vision() <=
                             action.get_target_coordinates()[1] <=
-                            guardian.coordinates.get_coordinates()[1] + guardian.vision):
+                            guardian.coordinates.get_coordinates()[1] + guardian.get_vision()):
+                        # if guardian.get_cool_down() == 0:
+                        #     return True
+                        # else:
+                        #     print("Guardian is on cooldown")
+                        #     return False
                         return True
                     print("Target out of range")
                     return False
                 elif action.get_action_type() == "MOVE":
-                    if ((guardian.coordinates.get_coordinates()[0] - guardian.speed) <= action.get_target_coordinates()[
-                        0] <=
-                        (guardian.coordinates.get_coordinates()[0] + guardian.speed)) and (
-                            guardian.coordinates.get_coordinates()[1] - guardian.speed <=
+                    if ((guardian.coordinates.get_coordinates()[0] - guardian.get_speed()) <=
+                        action.get_target_coordinates()[
+                            0] <=
+                        (guardian.coordinates.get_coordinates()[0] + guardian.get_speed())) and (
+                            guardian.coordinates.get_coordinates()[1] - guardian.get_speed() <=
                             action.get_target_coordinates()[1] <=
-                            guardian.coordinates.get_coordinates()[1] + guardian.speed):
+                            guardian.coordinates.get_coordinates()[1] + guardian.get_speed()):
                         return True
                     print("Target out of range MOVE")
                     return False
@@ -395,60 +470,116 @@ class Environment:
                     # check all parameters for special actions once it is updated
                     return True
             else:
+                if player == self.get_player1().get_player_id():
+                    self.__player1_feedback.append(Feedback("guardian_died"))
+                elif player == self.get_player2().get_player_id():
+                    self.__player2_feedback.append(Feedback("guardian_died"))
                 print("Guardian is dead")
                 return False
         else:
+
             print("Guardian not found")
             return False
 
     def execute_action(self, player1_action: Action, player2_action: Action, player1_error: bool, player2_error: bool):
         print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
-        player1_error = False
-        player2_error = False
-        if not self.validate_action(player1_action):
+
+        if not player1_error and not self.validate_action(player1_action):
             player1_error = True
             self.reduce_score(self.get_player1().get_player_id(), 'invalid_action')
             print("player1", self.get_player1_penality_score())
-        if not self.validate_action(player2_action):
+        if not player2_error and not self.validate_action(player2_action):
             player2_error = True
             self.reduce_score(self.get_player2().get_player_id(), 'invalid_action')
             print("player2", self.get_player2_penality_score())
 
         print(player1_error, player2_error, "errors execute action")
         if not player1_error:
-            if player1_action.get_action_type() == "MOVE":
+            if player1_action.get_action_type() == Action.MOVE:
                 guardian = self.__player1.get_guardian_by_type(
                     player1_action.get_guardian_type())  # update it to return
                 # guardian object directly
-                print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
-                print("Here")
                 guardian.get_coordinates().remove_guardian_from_cell(guardian)
-                print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
-                print("Here11")
                 guardian.set_coordinates(player1_action.get_target(self.__graph))
-                print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
+                guardian.get_coordinates().add_guardian_to_cell(guardian)
+                print("Target Cell: ", guardian.get_coordinates().get_coordinates(), self
+                      .__player1.get_guardian_by_type(
+                    player1_action.get_guardian_type()).get_coordinates().get_coordinates())
 
+                print("Cell Guardian: ", guardian.get_coordinates().get_guardians_present(),
+                      len(guardian.get_coordinates().get_guardians_present()))
+                print(self.get_graph()[guardian.get_coordinates().get_coordinates()[0]][
+                          guardian.get_coordinates().get_coordinates()[1]].get_guardians_present(), len(
+                    self.get_graph()[guardian.get_coordinates().get_coordinates()[0]][
+                        guardian.get_coordinates().get_coordinates()[1]].get_guardians_present()))
+
+        if not player2_error:
+            if player2_action.get_action_type() == Action.MOVE:
+                guardian = self.__player2.get_guardian_by_type(
+                    player2_action.get_guardian_type())  # update it to return
+                # guardian object directly
+                guardian.get_coordinates().remove_guardian_from_cell(guardian)
+                guardian.set_coordinates(player2_action.get_target(self.__graph))
                 guardian.get_coordinates().add_guardian_to_cell(guardian)
 
-            elif player1_action.get_action_type == "Attack":
-                guardians_present = player1_action.get_target().get_guardians_present()
-                our_guadian = player1_action.get_guardian()
-                for guardian in guardians_present:
-                    # if multiple enemy __guardians are present then attack all, if none of them are there then for __guardians present would be empty
-                    if (guardian.belongs_to == self.__player2):
-                        # update get_troop to return guardian object after checking if the guardian is not dead
-                        guardian.set_health(guardian.get_health() - our_guadian.get_damage())
-                        if (guardian.get_health() <= 0):
-                            guardian.is_alive = False
-                            guardian.set_health(0)
+        if not player1_error:
+            if player1_action.get_action_type() == Action.ATTACK:
+                guardians_present = player1_action.get_target(self.get_graph()).get_guardians_present()
+                our_guardian = self.__player1.get_guardian_by_type(
+                    player1_action.get_guardian_type())
 
-                    # Set appropriate feedback for other player
+                if guardians_present and our_guardian:
+                    for guardian in guardians_present:
+                        # if multiple enemy __guardians are present then attack all, if none of them are there then
+                        # for __guardians present would be empty
+                        if guardian.get_belongs_to_player() == self.__player2:
+                            # update get_troop to return guardian object after checking if the guardian is not dead
+                            feedback = guardian.set_health(guardian.get_health() - our_guardian.get_attack_damage())
+                            if feedback:
+                                feedback.set_data({"attacker_type": our_guardian.get_type(),
+                                                   'victim_type': guardian.get_type()})
+                                self.add_player2_feedback(feedback)
+                            self.add_player1_feedback(Feedback("attack_success",
+                                                               {"victim_type": guardian.get_type(),
+                                                                "attacker": our_guardian.get_type()}))
+                            self.add_player2_feedback(Feedback("you_have_been_attacked",
+                                                               {"attacker": our_guardian.get_type(),
+                                                                "victim_type": guardian.get_type()}))
 
+        if not player2_error:
+            print("player2 action type is ", player2_action.get_action_type())
+            print(Action.ATTACK, Action.ATTACK == player2_action.get_action_type())
+            if player2_action.get_action_type() == Action.ATTACK:
+
+                guardians_present = player2_action.get_target(self.get_graph()).get_guardians_present()
+                our_guardian = self.__player2.get_guardian_by_type(
+                    player2_action.get_guardian_type())
+                print("guardians present", guardians_present)
+                print("our guardian", our_guardian)
+                print("here")
+                if guardians_present and our_guardian:
+                    for guardian in guardians_present:
+                        # if multiple enemy __guardians are present then attack all, if none of them are there then
+                        # for __guardians present would be empty
+                        if guardian.get_belongs_to_player() == self.__player1:
+                            # update get_troop to return guardian object after checking if the guardian is not dead
+                            feedback = guardian.set_health(guardian.get_health() - our_guardian.get_attack_damage())
+                            if feedback:
+                                feedback.set_data({"attacker_type": our_guardian.get_type(),
+                                                   'victim_type': guardian.get_type()})
+                                self.add_player1_feedback(feedback)
+
+                            self.add_player2_feedback(Feedback("attack_success",
+                                                               {"victim_type": guardian.get_type(),
+                                                                "attacker": our_guardian.get_type()}))
+                            self.add_player1_feedback(Feedback("you_have_been_attacked",
+                                                               {"attacker": our_guardian.get_type(),
+                                                                "victim_type": guardian.get_type()}))
 
             elif (player1_action.get_action_type == "Special"):
                 player1_action.get_guardian().special_ability()  # since we are getting the guradian object corresponding to the sub class, we can directly call the special ability
 
-        return "f"
+        return True
 
     def reduce_score(self, player: str, feedback_code: str):
 

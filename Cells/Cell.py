@@ -1,14 +1,36 @@
 class Cell:
-    def __init__(self, coordinates, guardian_present=[], neighbour_cells=[], cell_type="Normal"):
+    Normal = 'Normal'
+    Teleporter = 'Teleporter'
+    Clue = 'Clue'
+    HealPoint = 'HealPoint'
+    Beast = 'Beast'
+
+    def __init__(self, coordinates, guardian_present=[], neighbour_cells=[], cell_type=Normal):
         self.__coordinates = coordinates
-        self.__guardian_present = guardian_present  # This should have the guardian sub class object of the guardian
+        self.__guardian_present = guardian_present.copy()  # This should have the guardian sub class object of the guardian
         # present in the cell
-        self.__neighbour_cells = neighbour_cells
-        self.__cell_type = cell_type
+        self.__neighbour_cells = neighbour_cells.copy()
+
+        if cell_type == Cell.Normal:
+            self.__cell_type = Cell.Normal
+        elif cell_type == Cell.Teleporter:
+            self.__cell_type = Cell.Teleporter
+        elif cell_type == Cell.Clue:
+            self.__cell_type = Cell.Clue
+        elif cell_type == Cell.HealPoint:
+            self.__cell_type = Cell.HealPoint
+        elif cell_type == Cell.Beast:
+            self.__cell_type = Cell.Beast
+        else:
+            raise (ValueError("Invalid cell type"))
 
     def add_neighbour_cell(self, cell: 'Cell'):
+        print("Adding neighbour cell", cell)
+        print("Neighbour cells before", self.__neighbour_cells)
         if cell not in self.__neighbour_cells:
             self.__neighbour_cells.append(cell)
+
+        print("Neighbour cells after", self.__neighbour_cells)
 
     def get_neighbour_cells(self):
         return self.__neighbour_cells
@@ -20,6 +42,7 @@ class Cell:
         return True if len(self.__guardian_present) > 0 else False
 
     def add_guardian_to_cell(self, guardian):  # this guardian should be of the type Drax, Gamora etc
+
         self.__guardian_present.append(guardian)
 
     def remove_guardian_from_cell(self, guardian):

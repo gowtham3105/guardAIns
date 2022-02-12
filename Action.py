@@ -31,6 +31,8 @@ class Action:
 
         if troop in Action.TROOPS:
             self.__troop = troop
+        else:
+            print("Invalid troop:", troop)
 
         self.__target = target_coordinates
         self.__is_valid = False

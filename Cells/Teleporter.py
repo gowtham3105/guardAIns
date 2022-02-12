@@ -5,7 +5,8 @@ from .Cell import Cell
 
 class Teleporter(Cell):
     def __init__(self, cell: Cell):
-        super().__init__(cell.get_coordinates(), cell.get_guardians_present(), cell.get_neighbour_cells(), "Teleporter")
+        super().__init__(cell.get_coordinates(), cell.get_guardians_present(), cell.get_neighbour_cells(),
+                         Cell.Teleporter)
 
     def generate_destination(self, goal_cell: Cell, graph) -> Cell:
         # give a random cell that is closer to the goal state

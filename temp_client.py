@@ -15,7 +15,7 @@ if sys.argv[1] == "1":
 else:
     PLAYER_ID = 'player2'
     PLAYER_PASSWORD = 'player2'
-PLAYER_ROOM = 'room1'
+PLAYER_ROOM = 'room12'
 
 
 @sio.event
@@ -27,22 +27,21 @@ def connect():
 def action(state):
     print('State: ', state)
     print(type(state))
-    target = (0, 1) if PLAYER_ID == 'player1' else (10, 0)
+
     if PLAYER_ID == 'player1':
         action = {
             "action_type": 'MOVE',
             "troop": "Gamora",
-            'target': target,
+            'target': (0, 1),
             'player_id': PLAYER_ID,
             'player_password': PLAYER_PASSWORD,
             'round_no': state['round_no']
-
         }
     else:
         action = {
             "action_type": 'ATTACK',
             "troop": "Gamora",
-            'target': target,
+            'target': (0, 1),
             'player_id': PLAYER_ID,
             'player_password': PLAYER_PASSWORD,
             'round_no': state['round_no']

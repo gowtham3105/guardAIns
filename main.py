@@ -7,6 +7,7 @@ import eventlet
 import socketio
 
 from Action import Action
+from Feedback import Feedback
 
 eventlet.monkey_patch()
 
@@ -14,8 +15,8 @@ from Environment import Environment
 from Player import Player
 
 rooms = {
-    'room1': {
-        'id': 'room1',
+    'room12': {
+        'id': 'room12',
         'start_time': "Feb 10 2022  7:48PM +0530",
         'player1': {
             'player_id': 'player1',
@@ -76,7 +77,7 @@ def create_socket():
 def main():
     sio, app = create_socket()
 
-    ROOM_ID = 'room1'
+    ROOM_ID = 'room12'
 
     if ROOM_ID not in rooms.keys():
         return False
@@ -88,8 +89,8 @@ def main():
     print(start_time)
     print(time.time())
     print(start_time - time.time())
-    start_time = time.time() + 10
-    env = Environment(ROOM_ID, start_time, 20, 20, 30, 1, 0, )
+    start_time = time.time() + 5
+    env = Environment(ROOM_ID, start_time, 20, 20, 30, 1, 3, )
     env.create_graph()
 
     env.print_graph()
@@ -105,13 +106,22 @@ def main():
     @sio.event
     def action(sid, data):
         if sid == env.get_player1().get_socket_id():
-            print("player1 action")
-            env.add_action_to_player1(Action.get_obj_from_json(data))
+            try:
+                env.add_action_to_player1(Action.get_obj_from_json(data))
+            except Exception as e:
+                env.add_player1_feedback(Feedback("error", "Invalid action"))
+                env.reduce_score(env.get_player1(), "invalid_action")
+                print(e)
         elif sid == env.get_player2().get_socket_id():
-            print('Player 2 action')
-            env.add_action_to_player2(Action.get_obj_from_json(data))
+            try:
+                env.add_action_to_player2(Action.get_obj_from_json(data))
+            except Exception as e:
+                env.add_player2_feedback(Feedback("error", "Invalid action"))
+                env.reduce_score(env.get_player2(), "invalid_action")
+                print(e)
         else:
             print('invalid user')
+            sio.disconnect(sid)
 
         print(sid, data, type(data))
 
@@ -179,11 +189,11 @@ def main():
     @sio.on('disconnect')
     def disconnect(sid):
         print('disconnect ', sid)
-        if env.get_player1().get_socket_id() == sid:
+        if env.get_player1() and env.get_player1().get_socket_id() == sid:
             env.get_player1().set_connected(False)
             env.get_player1().set_socket_id(None)
             print("player1 disconnected")
-        elif env.get_player2().get_socket_id() == sid:
+        elif env.get_player2() and env.get_player2().get_socket_id() == sid:
             env.get_player2().set_connected(False)
             env.get_player2().set_socket_id(None)
             print("player2 disconnected")
