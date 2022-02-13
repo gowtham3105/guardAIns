@@ -6,6 +6,8 @@ from Guardian import Guardian
 
 
 class Drax(Guardian):
+    MAX_HEALTH = 150
+
     def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.__health = 150
         self.__attack_damage = 70

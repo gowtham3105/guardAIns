@@ -32,7 +32,7 @@ def action(state):
         action = {
             "action_type": 'MOVE',
             "troop": "Gamora",
-            'target': (0, 1),
+            'target': '0, 1)',
             'player_id': PLAYER_ID,
             'player_password': PLAYER_PASSWORD,
             'round_no': state['round_no']
@@ -41,7 +41,7 @@ def action(state):
         action = {
             "action_type": 'ATTACK',
             "troop": "Gamora",
-            'target': (0, 1),
+            'target': '(0, 1)',
             'player_id': PLAYER_ID,
             'player_password': PLAYER_PASSWORD,
             'round_no': state['round_no']

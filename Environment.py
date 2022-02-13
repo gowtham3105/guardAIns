@@ -54,12 +54,6 @@ class Environment:
     def get_rounds(self):
         return self.__rounds
 
-    def get_current_state(self) -> State:
-        return self.__currentState
-
-    def get_feedback(self) -> Feedback:
-        return self.__feedback
-
     def get_player1(self) -> Player:
         return self.__player1
 
@@ -259,7 +253,7 @@ class Environment:
             print("Beast placed at: ", y, x)
 
             if self.__graph[y][x].get_cell_type() == 'Normal':
-                self.__graph[y][x] = Beast(self.__graph[y][x])
+                self.__graph[0][0] = Beast(self.__graph[0][0])
 
         x = random.randint(0, self.__width - 1)
         y = random.randint(0, self.__height - 1)
@@ -491,43 +485,115 @@ class Environment:
                         raise RuntimeError("Invalid Player ID")
 
             for troop in self.get_player1().get_guardians().values():
+                troop.add_score(troop.get_health() / troop.MAX_HEALTH)
+
                 if troop.get_coordinates().get_cell_type() == Cell.Teleporter:
                     dest = troop.get_coordinates().generate_destination(self.__infinity_stone, self.get_graph())
                     if dest.get_cell_type() == Cell.Normal:
                         troop.get_coordinates().remove_guardian_from_cell(troop)
                         troop.set_coordinates(dest)
                         troop.get_coordinates().add_guardian_to_cell(troop)
-
-                        new_cell = Cell(dest.get_coordinates(), dest.get_guardians_present(),
-                                        dest.get_neighbour_cells(), Cell.Normal)
-                        self.__graph[dest.get_coordinates()[1]][dest.get_coordinates()[0]] = new_cell
                         self.add_player1_feedback(Feedback("teleport_success", {"coordinates": dest.get_coordinates(),
                                                                                 "guardian": troop.get_type()}))
+                elif troop.get_coordinates().get_cell_type() == Cell.Clue:
+                    clue, two_players_present = troop.get_coordinates().get_clue(self.get_player2(),
+                                                                                 self.__infinity_stone)
+                    # two_players_present = False
+                    if clue:
+                        self.add_player1_feedback(clue)
+                        if not two_players_present:
+                            new_cell = Cell(troop.get_coordinates().get_coordinates(),
+                                            troop.get_coordinates().get_guardians_present(),
+                                            troop.get_coordinates().get_neighbour_cells(), Cell.Normal)
+                            self.__graph[troop.get_coordinates().get_coordinates()[1]][
+                                troop.get_coordinates().get_coordinates()[0]] = new_cell
+                            troop.set_coordinates(new_cell)
+                            for guardian_in_cell in troop.get_coordinates().get_guardians_present():
+                                guardian_in_cell.set_coordinates(troop.get_coordinates())
+                    else:
+                        raise Exception("Clue not found but cell type is clue")
+                elif troop.get_coordinates().get_cell_type() == Cell.Beast:
+                    feedback, two_players_present = troop.get_coordinates().update_health(self.get_player1(),
+                                                                                          self.get_player2(),
+                                                                                          self.__infinity_stone,
+                                                                                          self.get_rounds())
+                    print("Player 1 Feedback for Beast", feedback)
+                    if feedback:
+                        print("Player 1 Feedback Code for Beast", feedback.get_feedback_code())
+                        if feedback.get_feedback_code() == "GUARDIAN_DEAD":
+                            feedback.set_data({"attacker_type": "Beast",
+                                               'victim_type': troop.get_type()})
+                        self.add_player1_feedback(feedback)
+                        print("Feedback Queue", self.get_player2_feedbacks())
+                        print("Two Pla", two_players_present)
+                        if not two_players_present:
+                            new_cell = Cell(troop.get_coordinates().get_coordinates(),
+                                            troop.get_coordinates().get_guardians_present(),
+                                            troop.get_coordinates().get_neighbour_cells(), Cell.Normal)
+                            self.__graph[troop.get_coordinates().get_coordinates()[1]][
+                                troop.get_coordinates().get_coordinates()[0]] = new_cell
+                            troop.set_coordinates(new_cell)
+                            for guardian_in_cell in troop.get_coordinates().get_guardians_present():
+                                guardian_in_cell.set_coordinates(troop.get_coordinates())
 
             for troop in self.get_player2().get_guardians().values():
+                troop.add_score(troop.get_health() / troop.MAX_HEALTH)
+
                 if troop.get_coordinates().get_cell_type() == Cell.Teleporter:
                     dest = troop.get_coordinates().generate_destination(self.__infinity_stone, self.get_graph())
                     if dest.get_cell_type() == Cell.Normal:
                         troop.get_coordinates().remove_guardian_from_cell(troop)
                         troop.set_coordinates(dest)
                         troop.get_coordinates().add_guardian_to_cell(troop)
-
-                        new_cell = Cell(dest.get_coordinates(), dest.get_guardians_present(),
-                                        dest.get_neighbour_cells(), Cell.Normal)
-                        self.__graph[dest.get_coordinates()[1]][dest.get_coordinates()[0]] = new_cell
                         self.add_player2_feedback(Feedback("teleport_success", {"coordinates": dest.get_coordinates(),
                                                                                 "guardian": troop.get_type()}))
+                elif troop.get_coordinates().get_cell_type() == Cell.Clue:
+                    clue, _ = troop.get_coordinates().get_clue(self.get_player1(), self.__infinity_stone)
+                    if clue:
+                        self.add_player2_feedback(clue)
+                        new_cell = Cell(troop.get_coordinates().get_coordinates(),
+                                        troop.get_coordinates().get_guardians_present(),
+                                        troop.get_coordinates().get_neighbour_cells(), Cell.Normal)
+                        self.__graph[troop.get_coordinates().get_coordinates()[1]][
+                            troop.get_coordinates().get_coordinates()[0]] = new_cell
+                        troop.set_coordinates(new_cell)
+                        for guardian_in_cell in troop.get_coordinates().get_guardians_present():
+                            guardian_in_cell.set_coordinates(troop.get_coordinates())
+                    else:
+                        raise Exception("Clue not found but cell type is clue")
+
+                elif troop.get_coordinates().get_cell_type() == Cell.Beast:
+                    feedback, two_players_present = troop.get_coordinates().update_health(self.get_player2(),
+                                                                                          self.get_player1(),
+                                                                                          self.__infinity_stone,
+                                                                                          self.get_rounds())
+                    if feedback:
+                        if feedback.get_feedback_code() == "GUARDIAN_DEAD":
+                            feedback.set_data({"attacker_type": "Beast",
+                                               'victim_type': troop.get_type()})
+                        self.add_player2_feedback(feedback)
+                        new_cell = Cell(troop.get_coordinates().get_coordinates(),
+                                        troop.get_coordinates().get_guardians_present(),
+                                        troop.get_coordinates().get_neighbour_cells(), Cell.Normal)
+                        self.__graph[troop.get_coordinates().get_coordinates()[1]][
+                            troop.get_coordinates().get_coordinates()[0]] = new_cell
+                        troop.set_coordinates(new_cell)
+                        for guardian_in_cell in troop.get_coordinates().get_guardians_present():
+                            guardian_in_cell.set_coordinates(troop.get_coordinates())
+
+                        print(troop.get_coordinates(), troop.get_coordinates().get_cell_type())
 
             self.__rounds += 1
 
             print("Round: ", self.__rounds)
-            time.sleep(1)
-            # print("Player 1 Score: ", self.get_player1_penality_score())
-            # print("Player 2 Score: ", self.get_player2_penality_score())
-            # print("Player 1 Feedback: ", self.__player1_feedback)
-            # print("Player 2 Feedback: ", self.__player2_feedback)
-            # print("player 1 Guardians: ", self.get_player1().get_guardians())
-            # print("player 2 Guardians: ", self.get_player2().get_guardians())
+            # time.sleep(0.5)
+            self.get_reduced_score()
+            print("Player 1 Score: ", self.get_player1_penality_score())
+            print("Player 2 Score: ", self.get_player2_penality_score())
+            print("Player 1 Feedback: ", self.__player1_feedback)
+            print("Player 2 Feedback: ", self.__player2_feedback)
+            print("player 1 Guardians: ", self.get_player1().get_guardians())
+            print("player 2 Guardians: ", self.get_player2().get_guardians())
 
         return True
 
@@ -693,40 +759,36 @@ class Environment:
 
     def evaluate_draw(self):
         print("Evaluating draw")
-        reduced_score_player1 = (self.__player1_penalty_score / self.__max_penalty_score) * 0.5
-        reduced_score_player2 = (self.__player2_penalty_score / self.__max_penalty_score) * 0.5
-
-        time_alive = 0
-        for guardian in self.__player1.get_guardians().values():
-            if guardian.is_alive():
-                time_alive += self.__rounds
-            else:
-                died_at = guardian.get_died_at()
-                if died_at:
-                    time_alive += died_at
-                else:
-                    raise (Exception("Guardian died at is not set, but is dead"))
-
-        reduced_score_player1 += (time_alive / (self.__rounds * 5)) * 0.5
-
-        time_alive = 0
-        for guardian in self.__player2.get_guardians().values():
-            if guardian.is_alive():
-                time_alive += self.__rounds
-            else:
-                died_at = guardian.get_died_at()
-                if not died_at:
-                    time_alive += guardian.get_died_at()
-                else:
-                    raise (Exception("Guardian died at is not set, but is dead"))
-
-        reduced_score_player2 += (time_alive / (self.__rounds * 5)) * 0.5
-
-        print("Reduced score player 1: ", reduced_score_player1)
-        print("Reduced score player 2: ", reduced_score_player2)
+        reduced_score_player1, reduced_score_player2 = self.get_reduced_score()
         if reduced_score_player1 > reduced_score_player2:
             return self.__player1
         elif reduced_score_player1 < reduced_score_player2:
             return self.__player2
         else:
             return None
+
+    def get_reduced_score(self):
+        reduced_score_player1 = (self.__player1_penalty_score / self.__max_penalty_score) * 0.5
+        reduced_score_player2 = (self.__player2_penalty_score / self.__max_penalty_score) * 0.5
+
+        # print("Reduced score for player 1: ", reduced_score_player1)
+        # print("Reduced score for player 2: ", reduced_score_player2)
+
+        player1_alive_score = 0
+        for guardian in self.__player1.get_guardians().values():
+            player1_alive_score += guardian.get_score()
+        # print("Player 1 alive score: ", (player1_alive_score / (self.__rounds * 5)) * 0.5)
+        reduced_score_player1 += (player1_alive_score / (self.__rounds * 5)) * 0.5
+
+        player2_alive_score = 0
+        for guardian in self.__player2.get_guardians().values():
+            player2_alive_score += guardian.get_score()
+
+        # print("Player 2 alive score: ", (player2_alive_score / (self.__rounds * 5)) * 0.5)
+
+        reduced_score_player2 += (player2_alive_score / (self.__rounds * 5)) * 0.5
+
+        print("Reduced score player 1: ", reduced_score_player1)
+        print("Reduced score player 2: ", reduced_score_player2)
+
+        return reduced_score_player1, reduced_score_player2

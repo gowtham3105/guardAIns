@@ -9,11 +9,7 @@ class Guardian:
         self.coordinates = init_coordinates
         self.__is_alive = alive
         self.__died_at = None
-
-    def attack(self, cell):
-        # check if cell has an enemy i.e guardian from opposite team
-        # update health
-        return 0
+        self.__score = 0
 
     def update_cooldown(self):
         # called from environment, cold own is updated after every round
@@ -40,3 +36,9 @@ class Guardian:
 
     def get_died_at(self):
         return self.__died_at
+
+    def get_score(self):
+        return self.__score
+
+    def add_score(self, amount):
+        self.__score += amount

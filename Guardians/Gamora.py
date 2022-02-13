@@ -2,10 +2,9 @@ from Cells.Cell import Cell
 from Guardian import Guardian
 
 
-# from Player import Player
-
-
 class Gamora(Guardian):
+    MAX_HEALTH = 125
+
     def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.__health = 125
         self.__attack_damage = 50

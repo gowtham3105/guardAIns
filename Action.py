@@ -14,7 +14,7 @@ class Action:
             action_type = json_data["action_type"]
             troop = json_data["troop"]
             # tuple str to tuple
-            target = tuple(json_data["target"])
+            target = tuple(map(int, json_data["target"].strip('(').strip(')').split(',')))
             player_id = json_data["player_id"]
             player_password = json_data["player_password"]
             round_no = json_data['round_no']

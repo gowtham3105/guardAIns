@@ -6,6 +6,8 @@ from Guardian import Guardian
 
 
 class Groot(Guardian):
+    MAX_HEALTH = 200
+
     def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.__health = 200
         self.__attack_damage = 25
