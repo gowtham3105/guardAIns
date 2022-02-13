@@ -39,11 +39,14 @@ class State:
             for cell_list in troop:
                 side = []
                 for cell in cell_list:
-                    side.append({"coordinates": str(cell), "cell_type": cell.__class__.__name__, "is_powerStone_present": str(cell.get_coordinates(
-                    ) == self.__infinityStone.get_coordinates()), 'guardians_present': [{i.belongs_to_player, i.__class__.__name__} for i in cell.get_guardians_present()]})
+                    side.append({"coordinates": str(cell), "cell_type": cell.__class__.__name__, "is_powerStone_present": str(str(cell.get_coordinates(
+                    )) == str(self.__infinityStone.get_coordinates())), 'guardians_present': [{i.belongs_to_player, i.__class__.__name__} for i in cell.get_guardians_present()]})
                 neighbours.append(side)
-            movegen_as_json[troop_name] = {"coordinates": str(self.__player.get_guardian_by_type(
-                troop_name).coordinates), "health": self.__player.get_guardian_by_type(troop_name).health, "neighbour_cells": neighbours}
+            guardian = self.__player.get_guardian_by_type(troop_name)
+            current_cell = {"coordinates": str(guardian.get_coordinates()), "cell_type": guardian.__class__.__name__, "is_powerStone_present": str(str(guardian.get_coordinates(
+            )) == str(self.__infinityStone.get_coordinates())), 'guardians_present': [{i.belongs_to_player, i.__class__.__name__} for i in guardian.get_guardians_present()]}
+
+            movegen_as_json[troop_name] = {"health": guardian.health, "cooldown": guardian.get_cooldown,"current_cell": current_cell,  "neighbour_cells": neighbours}
             if troop_name == "StarLord":
                 # starLord_vision is a neighbour_cells list with out wall limits.
                 movegen_as_json[troop_name]["special_vision"] = starLord_vision

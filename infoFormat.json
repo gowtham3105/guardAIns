@@ -3,13 +3,26 @@
             {
                 "guardian_name":
                         {
-                            "coordinates": "(x,y)",
+                            "health": "health-int",
+                            "cool_down": "cool_down-int",
+                            "current_cell":
+                            {
+                                "coordinates": "(x,y)",
+                                "cell_type": "cell_type-str",
+                                "is_powerStone_present": "is_powerStone_present-bool",
+                                "guardians_present": [
+                                    {
+                                        "belogns_to": "belongs_to",
+                                        "guardian_name": "guardian_name"
+                                    }
+                                ]
+                            },
                             "neighbour_cells" : 
                             [[
                                 {
-                                    "coordiantes": "(x,y)",
-                                    "cell_type": "cell_type",
-                                    "is_powerStone_present": "False",
+                                    "coordinates": "(x,y)",
+                                    "cell_type": "cell_type-str",
+                                    "is_powerStone_present": "is_powerStone_present-bool",
                                     "guardians_present": [
                                         {
                                             "belogns_to": "belongs_to",
