@@ -26,13 +26,15 @@ class Clue(Cell):
         return {"enemy_locations": return_dict}
 
     def get_best_direction(self, infinityStone: InfinityStone):
-        direcionSlope = (self.get_coordinates()[1]-infinityStone.get_coordinates()[1])/(self.get_coordinates()[0]-infinityStone.get_coordinates()[0]) # TODO: check order
-        return {"infinity_stone_direction":direcionSlope}
-    def get_clue(self,opponentPlayer:Player,infinityStone:InfinityStone, player:Player):
+        direcionSlope = (self.get_coordinates()[1]-infinityStone.get_coordinates()[1])/(
+            self.get_coordinates()[0]-infinityStone.get_coordinates()[0])  # TODO: check order
+        return {"infinity_stone_direction": direcionSlope}
+
+    def get_clue(self, opponentPlayer: Player, infinityStone: InfinityStone, player: Player):
         if self.is_clue_active:
             if self.type == "enemy_seen":
-                return self.enemy_location()
+                return self.enemy_location(opponentPlayer=opponentPlayer)
             elif self.type == "node_Optimal_path":
-                return self.get_best_direction()
+                return self.get_best_direction(infinityStone=infinityStone)
         else:
             return

@@ -1,34 +1,21 @@
-from Cells.Cell import Cell
+import imp
+from Guardians.Gamora import Gamora
+from Player import Player
+from Guardians.Drax import Drax
+from Guardians.Gamora import Gamora
+from Guardians.Groot import Groot
+from Guardians.Rocket import Rocket
+from Guardians.StarLord import StarLord
 
 
 class State:
-    def __init__(self, movegen: dict, feedback, penalty_score, round_no) -> None:
+    # This class is data given for users.  for now penality score, feedback, movegen, player's troops info.
+    def __init__(self, movegen: dict, feedback, penalty_score, round_no, player: Player) -> None:
         self.__feedback = feedback
         self.__penalty_score = penalty_score
         self.__round_no = round_no
-        # Copy movegen  to avoid reference
-
-        temp_movgen = {}
-
-        for troop_name, troop in movegen.items():
-            neighbours = []
-            for cell_list in troop:
-                side = []
-                for cell in cell_list:
-                    new_cell = Cell(cell.get_coordinates(), cell.get_guardians_present(), cell.get_neighbour_cells(),
-                                    cell.get_cell_type())
-                    side.append(new_cell)
-                neighbours.append(side)
-            temp_movgen[troop_name] = neighbours
-        self.__movegen = temp_movgen
-
-        for troop in self.__movegen.values():
-            for cell_list in troop:
-                for cell in cell_list:
-                    cell.remove_neighbours()
-
         self.__movegen = movegen
-
+        self.__player = player
     def get_movegen(self):
         return self.__movegen
 
@@ -40,19 +27,20 @@ class State:
 
     def json(self):
         movegen_as_json = {}
+        troops_name = ['Gamora', 'Rocket', 'Groot', 'Drax', 'StarLord']
         for troop_name, troop in self.__movegen.items():
             neighbours = []
             for cell_list in troop:
                 side = []
                 for cell in cell_list:
-                    side.append(str(cell))
+                    side.append({str(cell): cell.__class__.__name__, 'guardians_present': [{i.belongs_to_player,i.__class__.__name__} for i in cell.get_guardians_present()]})
                 neighbours.append(side)
-            movegen_as_json[troop_name] = neighbours
-
+            movegen_as_json[troop_name] ={"coordinates": str(self.__player.get_guardian_by_type(troop_name).coordinates), "health": self.__player.get_guardian_by_type(troop_name).health ,"neighbour_cells": neighbours}
+        
         feedback_as_json = []
         for feed in self.__feedback:
             feedback_as_json.append(feed.json())
-
+        
         return {
             "movegen": movegen_as_json,
             "feedback": feedback_as_json,
