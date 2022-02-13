@@ -1,0 +1,31 @@
+{
+    "movegen":
+            {
+                "guardian_name":
+                        {
+                            "coordinates": "(x,y)",
+                            "neighbour_cells" : 
+                            [[
+                                {
+                                    "coordiantes": "(x,y)",
+                                    "cell_type": "cell_type",
+                                    "is_powerStone_present": "False",
+                                    "guardians_present": [
+                                        {
+                                            "belogns_to": "belongs_to",
+                                            "guardian_name": "guardian_name"
+                                        }
+                                    ]
+                                }
+                            ]]
+                        }
+            },
+    "feedback": 
+        {
+            "code": "codestring",
+            "message": "messagestring",
+            "data": "datastring"
+        },
+    "penalty_score":  "int",
+    "round_no":  "int"
+}
