@@ -37,7 +37,7 @@
         {
             "code": "codestring",
             "message": "messagestring",
-            "data": "datastring"
+            "data": "dataobject"
         },
     "penalty_score":  "int",
     "round_no":  "int"

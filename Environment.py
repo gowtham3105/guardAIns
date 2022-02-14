@@ -436,9 +436,9 @@ class Environment:
                 return True
 
             player1_state = State(self.movegen(self.get_player1()), self.__player1_feedback,
-                                  self.__player1_penalty_score, self.get_rounds())
+                                  self.__player1_penalty_score, self.get_rounds(),self.__player1,self.__infinity_stone)
             player2_state = State(self.movegen(self.get_player2()), self.__player2_feedback,
-                                  self.__player2_penalty_score, self.get_rounds())
+                                  self.__player2_penalty_score, self.get_rounds(),self.__player2,self.__infinity_stone)
 
             player1_error = False
             player2_error = False

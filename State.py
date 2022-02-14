@@ -46,9 +46,9 @@ class State:
                 neighbours.append(side)
             guardian = self.__player.get_guardian_by_type(troop_name)
             current_cell = {"coordinates": str(guardian.get_coordinates()), "cell_type": guardian.__class__.__name__, "is_powerStone_present": str(str(guardian.get_coordinates(
-            )) == str(self.__infinityStone.get_coordinates())), 'guardians_present': [{i.belongs_to_player, i.__class__.__name__} for i in guardian.get_guardians_present()]}
+            )) == str(self.__infinityStone.get_coordinates())), 'guardians_present': [{i.belongs_to_player, i.__class__.__name__} for i in guardian.get_coordinates().get_guardians_present()]}
 
-            movegen_as_json[troop_name] = {"health": guardian.health, "cooldown": guardian.get_cooldown,"current_cell": current_cell,  "neighbour_cells": neighbours}
+            movegen_as_json[troop_name] = {"health": guardian.get_health(), "cooldown": guardian.get_cooldown,"current_cell": current_cell,  "neighbour_cells": neighbours}
         feedback_as_json = []
         for feed in self.__feedback:
             feedback_as_json.append(feed.json())
