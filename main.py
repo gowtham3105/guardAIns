@@ -92,7 +92,7 @@ def main():
     print(time.time())
     print(start_time - time.time())
     start_time = time.time() + 5
-    env = Environment(ROOM_ID, start_time, 10, 10, 300, 1, 10)
+    env = Environment(ROOM_ID, start_time, 10, 10, 300, 1, 2)
     env.create_graph()
 
     env.print_graph()
@@ -103,7 +103,9 @@ def main():
 
     print(env.is_graph_connected())
 
-    env.place_special_cells(3, 2, 2, 2)
+    if not env.place_special_cells(3, 2, 2, 2):
+        print("Error in placing special cells")
+        return False
 
     update_rounds = threading.Thread(target=env.update_rounds, args=(sio,))
     update_rounds.start()
@@ -155,7 +157,7 @@ def main():
                 if auth_details['player_id'] == rooms[auth_details['room']]['player1']['player_id']:
                     if auth_details['password'] == rooms[auth_details['room']]['player1']['password']:
                         if env.get_player1() is None:
-                            env.set_player1(Player(auth_details['player_id'], sid, env.get_graph()[0][0]))
+                            env.set_player1(Player(auth_details['player_id'], sid, env.get_graph()[5][2]))
                             print("player1 connected")
                         else:
                             print("Player Status: ", env.get_player1().is_connected(), " Player ID: ",
@@ -218,13 +220,17 @@ def main():
         else:
             print("disconnecting unknown player")
 
-    @sio.on('*')
-    def catch_all(event, sid, data):
-        print(event, sid, data)
+    # @sio.on('*')
+    # def catch_all(event, sid, data):
+    #     print(event, sid, data)
+
+    @sio.on('connect_error')
+    def connect_error(sid):
+        print('connect error ', sid)
 
     # start the server
 
-    eventlet.wsgi.server(eventlet.listen(('', 8000)), app)
+    eventlet.wsgi.server(eventlet.listen(('', 5000)), app)
 
 
 if __name__ == '__main__':

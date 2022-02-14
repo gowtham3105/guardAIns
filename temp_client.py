@@ -38,16 +38,16 @@ def action(state):
     if PLAYER_ID == 'player1':
         target = (0, counter)
         action = {
-            "action_type": 'MOVE',
-            "troop": "Groot",
-            'target': '(0, 1)',
+            "action_type": 'SPECIAL',
+            "troop": "Drax",
+            'target': '(3, 5)',
             'player_id': PLAYER_ID,
             'round_no': state['round_no']
         }
         counter += 1
     else:
         action = {
-            "action_type": 'ATTACK',
+            "action_type": 'MOVE',
             "troop": "Gamora",
             'target': '(0, 1)',
             'player_id': PLAYER_ID,
@@ -69,5 +69,5 @@ def connected(data):
     print("Response:", data)
 
 
-sio.connect('http://127.0.0.1:8000',
+sio.connect('http://127.0.0.1:5000',
             {"auth": json.dumps({'player_id': PLAYER_ID, 'password': PLAYER_PASSWORD, 'room': PLAYER_ROOM})})
