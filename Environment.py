@@ -1,4 +1,5 @@
 import random
+import sys
 import time
 
 from Action import Action
@@ -114,7 +115,7 @@ class Environment:
         for i in range(self.__height):
             temp_matrix = []
             for j in range(self.__width):
-                temp_matrix.append(Cell((i, j)))
+                temp_matrix.append(Cell((j, i)))
             matrix.append(temp_matrix)
             cell_spaces = ['|'] + [' ', '|'] * self.__width
             printable_matrix.append(cell_spaces.copy())
@@ -124,34 +125,34 @@ class Environment:
         visited = [[0 for _ in range(self.__width)] for _ in range(self.__height)]
         while len(stack):
             current_cell = stack.pop()
-            if visited[current_cell.get_coordinates()[0]][current_cell.get_coordinates()[1]] > 1:
+            if visited[current_cell.get_coordinates()[1]][current_cell.get_coordinates()[0]] > 1:
                 continue
-            visited[current_cell.get_coordinates()[0]][current_cell.get_coordinates()[1]] += 1
+            visited[current_cell.get_coordinates()[1]][current_cell.get_coordinates()[0]] += 1
             possible_neighbours = [[1, 0], [-1, 0], [0, 1], [0, -1]]
             random.shuffle(possible_neighbours)
             # possible_neighbours = random.choices(possible_neighbours, k=3)
 
             for neighbour in possible_neighbours:
-                if neighbour[0] + current_cell.get_coordinates()[0] < 0 \
-                        or neighbour[0] + current_cell.get_coordinates()[0] >= self.__height:
-                    continue
                 if neighbour[1] + current_cell.get_coordinates()[1] < 0 \
-                        or neighbour[1] + current_cell.get_coordinates()[1] >= self.__width:
+                        or neighbour[1] + current_cell.get_coordinates()[1] >= self.__height:
+                    continue
+                if neighbour[0] + current_cell.get_coordinates()[0] < 0 \
+                        or neighbour[0] + current_cell.get_coordinates()[0] >= self.__width:
                     continue
 
-                if visited[neighbour[0] + current_cell.get_coordinates()[0]][
-                    neighbour[1] + current_cell.get_coordinates()[1]] > 1:
+                if visited[neighbour[1] + current_cell.get_coordinates()[1]][
+                    neighbour[0] + current_cell.get_coordinates()[0]] > 1:
                     continue
-                if matrix[neighbour[0] + current_cell.get_coordinates()[0]][
-                    neighbour[1] + current_cell.get_coordinates()[1]] in stack:
+                if matrix[neighbour[1] + current_cell.get_coordinates()[1]][
+                    neighbour[0] + current_cell.get_coordinates()[0]] in stack:
                     continue
 
-                current_cell.add_neighbour_cell(matrix[neighbour[0] + current_cell.get_coordinates()[0]][
-                                                    neighbour[1] + current_cell.get_coordinates()[1]])
-                matrix[neighbour[0] + current_cell.get_coordinates()[0]][
-                    neighbour[1] + current_cell.get_coordinates()[1]].add_neighbour_cell(current_cell)
-                stack.append(matrix[neighbour[0] + current_cell.get_coordinates()[0]][
-                                 neighbour[1] + current_cell.get_coordinates()[1]])
+                current_cell.add_neighbour_cell(matrix[neighbour[1] + current_cell.get_coordinates()[1]][
+                                                    neighbour[0] + current_cell.get_coordinates()[0]])
+                matrix[neighbour[1] + current_cell.get_coordinates()[1]][
+                    neighbour[0] + current_cell.get_coordinates()[0]].add_neighbour_cell(current_cell)
+                stack.append(matrix[neighbour[1] + current_cell.get_coordinates()[1]][
+                                 neighbour[0] + current_cell.get_coordinates()[0]])
                 printable_matrix[
                     2 * (current_cell.get_coordinates()[1]) + 1 + neighbour[1]][
                     2 * (current_cell.get_coordinates()[0]) + 1 + neighbour[0]] = ' '
@@ -240,7 +241,7 @@ class Environment:
             print("Clue placed at: ", y, x)
 
             if self.__graph[y][x].get_cell_type() == 'Normal':
-                self.__graph[y][x] = Clue(self.__graph[y][x])
+                self.__graph[0][0] = Clue(self.__graph[0][0])
 
         for i in range(no_of_beasts):
             x = random.randint(0, self.__width - 1)
@@ -253,7 +254,7 @@ class Environment:
             print("Beast placed at: ", y, x)
 
             if self.__graph[y][x].get_cell_type() == 'Normal':
-                self.__graph[0][0] = Beast(self.__graph[0][0])
+                self.__graph[y][x] = Beast(self.__graph[y][x])
 
         x = random.randint(0, self.__width - 1)
         y = random.randint(0, self.__height - 1)
@@ -263,8 +264,9 @@ class Environment:
             y = random.randint(0, self.__height - 1)
 
         print("Infinity Stone placed at: ", y, x)
-        power_stone = InfinityStone(self.get_graph()[y][x])
+        power_stone = InfinityStone(self.get_graph()[1][0])
         self.__infinity_stone = power_stone
+
 
         return True
 
@@ -438,6 +440,13 @@ class Environment:
                     self.reduce_score(self.get_player1().get_player_id(), "timeout")
                 except Exception as e:
                     print(e)
+                    exception_type, exception_object, exception_traceback = sys.exc_info()
+                    filename = exception_traceback.tb_frame.f_code.co_filename
+                    line_number = exception_traceback.tb_lineno
+
+                    print("Exception type: ", exception_type)
+                    print("File name: ", filename)
+                    print("Line number: ", line_number)
                     self.add_player1_feedback(Feedback("error", {"error": str(e)}))
                     player1_error = True
                     self.reduce_score(self.get_player1().get_player_id(), "error")
@@ -464,6 +473,9 @@ class Environment:
                     self.reduce_score(self.get_player2().get_player_id(), "timeout")
                 except Exception as e:
                     print(e)
+                    print("Exception type: ", exception_type)
+                    print("File name: ", filename)
+                    print("Line number: ", line_number)
                     self.add_player2_feedback(Feedback("error", {'error': str(e)}))
                     player2_error = True
                     self.reduce_score(self.get_player2().get_player_id(), "error")
@@ -486,6 +498,8 @@ class Environment:
 
             for troop in self.get_player1().get_guardians().values():
                 troop.add_score(troop.get_health() / troop.MAX_HEALTH)
+                if troop.get_type() == "Groot":
+                    troop.special_ability(self.get_rounds())
 
                 if troop.get_coordinates().get_cell_type() == Cell.Teleporter:
                     dest = troop.get_coordinates().generate_destination(self.__infinity_stone, self.get_graph())
@@ -497,7 +511,8 @@ class Environment:
                                                                                 "guardian": troop.get_type()}))
                 elif troop.get_coordinates().get_cell_type() == Cell.Clue:
                     clue, two_players_present = troop.get_coordinates().get_clue(self.get_player2(),
-                                                                                 self.__infinity_stone)
+                                                                                 self.__infinity_stone,
+                                                                                 troop)
                     # two_players_present = False
                     if clue:
                         self.add_player1_feedback(clue)
@@ -510,22 +525,17 @@ class Environment:
                             troop.set_coordinates(new_cell)
                             for guardian_in_cell in troop.get_coordinates().get_guardians_present():
                                 guardian_in_cell.set_coordinates(troop.get_coordinates())
-                    else:
-                        raise Exception("Clue not found but cell type is clue")
+
                 elif troop.get_coordinates().get_cell_type() == Cell.Beast:
                     feedback, two_players_present = troop.get_coordinates().update_health(self.get_player1(),
                                                                                           self.get_player2(),
                                                                                           self.__infinity_stone,
                                                                                           self.get_rounds())
-                    print("Player 1 Feedback for Beast", feedback)
                     if feedback:
-                        print("Player 1 Feedback Code for Beast", feedback.get_feedback_code())
                         if feedback.get_feedback_code() == "GUARDIAN_DEAD":
                             feedback.set_data({"attacker_type": "Beast",
                                                'victim_type': troop.get_type()})
                         self.add_player1_feedback(feedback)
-                        print("Feedback Queue", self.get_player2_feedbacks())
-                        print("Two Pla", two_players_present)
                         if not two_players_present:
                             new_cell = Cell(troop.get_coordinates().get_coordinates(),
                                             troop.get_coordinates().get_guardians_present(),
@@ -539,6 +549,9 @@ class Environment:
             for troop in self.get_player2().get_guardians().values():
                 troop.add_score(troop.get_health() / troop.MAX_HEALTH)
 
+                if troop.get_type() == "Groot":
+                    troop.special_ability(self.get_rounds())
+
                 if troop.get_coordinates().get_cell_type() == Cell.Teleporter:
                     dest = troop.get_coordinates().generate_destination(self.__infinity_stone, self.get_graph())
                     if dest.get_cell_type() == Cell.Normal:
@@ -548,7 +561,7 @@ class Environment:
                         self.add_player2_feedback(Feedback("teleport_success", {"coordinates": dest.get_coordinates(),
                                                                                 "guardian": troop.get_type()}))
                 elif troop.get_coordinates().get_cell_type() == Cell.Clue:
-                    clue, _ = troop.get_coordinates().get_clue(self.get_player1(), self.__infinity_stone)
+                    clue, _ = troop.get_coordinates().get_clue(self.get_player1(), self.__infinity_stone, troop)
                     if clue:
                         self.add_player2_feedback(clue)
                         new_cell = Cell(troop.get_coordinates().get_coordinates(),
@@ -700,6 +713,11 @@ class Environment:
                             if feedback:
                                 feedback.set_data({"attacker_type": our_guardian.get_type(),
                                                    'victim_type': guardian.get_type()})
+                                print("Guardians Present are ", guardian.get_coordinates().get_guardians_present())
+                                guardian.get_coordinates().remove_guardian_from_cell(guardian)
+                                print("Guardians Present after removing",
+                                      guardian.get_coordinates().get_guardians_present())
+
                                 self.add_player2_feedback(feedback)
                             self.add_player1_feedback(Feedback("attack_success",
                                                                {"victim_type": guardian.get_type(),
@@ -725,6 +743,12 @@ class Environment:
                             if feedback:
                                 feedback.set_data({"attacker_type": our_guardian.get_type(),
                                                    'victim_type': guardian.get_type()})
+
+                                print("Guardians Present are 22", guardian.get_coordinates().get_guardians_present())
+                                guardian.get_coordinates().remove_guardian_from_cell(guardian)
+                                print("Guardians Present after removing22",
+                                      guardian.get_coordinates().get_guardians_present())
+
                                 self.add_player1_feedback(feedback)
 
                             self.add_player2_feedback(Feedback("attack_success",

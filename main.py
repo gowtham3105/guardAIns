@@ -92,10 +92,14 @@ def main():
     print(time.time())
     print(start_time - time.time())
     start_time = time.time() + 5
-    env = Environment(ROOM_ID, start_time, 20, 20, 300, 1, 5)
+    env = Environment(ROOM_ID, start_time, 10, 10, 300, 1, 2)
     env.create_graph()
 
     env.print_graph()
+    print(env.get_graph()[0][0].get_neighbour_cells())
+    print(env.get_graph()[1][0].get_neighbour_cells())
+    print(env.get_graph()[0][1].get_neighbour_cells())
+    print(env.get_graph()[2][1].get_neighbour_cells())
 
     print(env.is_graph_connected())
 

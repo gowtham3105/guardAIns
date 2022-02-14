@@ -27,7 +27,7 @@ class Beast(Clue):
                         self.give_clue_to_player.append(opponent)
                         return reduce_health, two_guardians_present
                     else:
-                        return self.get_clue(opponent, infinity_stone)
+                        return self.get_clue(opponent, infinity_stone, guardian)
                 else:
                     return None, None
             else:

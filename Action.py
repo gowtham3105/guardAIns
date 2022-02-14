@@ -16,9 +16,8 @@ class Action:
             # tuple str to tuple
             target = tuple(map(int, json_data["target"].strip('(').strip(')').split(',')))
             player_id = json_data["player_id"]
-            player_password = json_data["player_password"]
             round_no = json_data['round_no']
-            return cls(action_type, troop, target, round_no, player_id, player_password)
+            return cls(action_type, troop, target, round_no, player_id)
         except KeyError:
             print("KeyError: Invalid json data", json_data)
             return False
@@ -27,7 +26,7 @@ class Action:
             print("Unexpected error", json_data)
             return False
 
-    def __init__(self, action_type, troop, target_coordinates: tuple, round_no, player_id, player_password) -> None:
+    def __init__(self, action_type, troop, target_coordinates: tuple, round_no, player_id) -> None:
         if action_type in (Action.MOVE, Action.ATTACK, Action.SPECIAL):
             self.__action_type = action_type
 
@@ -40,7 +39,6 @@ class Action:
         self.__is_valid = False
         self.__round_no = round_no
         self.__player_id = player_id
-        self.__player_password = player_password
 
     def get_action_type(self) -> str:
         return self.__action_type
@@ -49,7 +47,7 @@ class Action:
         return self.__troop
 
     def get_target(self, graph) -> tuple:
-        return graph[self.__target[0]][self.__target[1]]
+        return graph[self.__target[1]][self.__target[0]]
 
     def get_target_coordinates(self) -> tuple:
         return self.__target

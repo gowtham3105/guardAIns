@@ -27,25 +27,30 @@ class Clue(Cell):
                 return_dict[troop_name] = troop.get_coordinates().get_coordinates()
         return {"clue_type": "get_enemy_locations", "data": return_dict}
 
-    def get_best_direction(self, infinityStone: InfinityStone):
+    def get_best_direction(self, infinityStone: InfinityStone, guardian):
         if self.get_coordinates()[1] == infinityStone.get_coordinates().get_coordinates()[1]:
             direction_slope = (self.get_coordinates()[0] - infinityStone.get_coordinates().get_coordinates()[0])
             if direction_slope > 0:
-                return {"clue_type": "get_direction_to_infinity_stone", "direction": "inf"}
+                return {"clue_type": "get_direction_to_infinity_stone", "direction": "inf",
+                        'guardian': guardian.get_type()}
             else:
-                return {"clue_type": "get_direction_to_infinity_stone", "direction": "-inf"}
+                return {"clue_type": "get_direction_to_infinity_stone", "direction": "-inf",
+                        'guardian': guardian.get_type()}
         if self.get_coordinates()[0] == infinityStone.get_coordinates().get_coordinates()[0]:
             direction_slope = (self.get_coordinates()[1] - infinityStone.get_coordinates().get_coordinates()[1])
             if direction_slope > 0:
-                return {"clue_type": "get_direction_to_infinity_stone", "direction": "0"}
+                return {"clue_type": "get_direction_to_infinity_stone", "direction": "0",
+                        'guardian': guardian.get_type()}
             else:
-                return {"clue_type": "get_direction_to_infinity_stone", "direction": "-0"}
+                return {"clue_type": "get_direction_to_infinity_stone", "direction": "-0",
+                        'guardian': guardian.get_type()}
 
         direction_slope = (self.get_coordinates()[0] - infinityStone.get_coordinates().get_coordinates()[0]) / (
                 self.get_coordinates()[1] - infinityStone.get_coordinates().get_coordinates()[1])
-        return {"clue_type": "get_direction_to_infinity_stone", "direction": str(direction_slope)}
+        return {"clue_type": "get_direction_to_infinity_stone", "direction": str(direction_slope),
+                'guardian': guardian.get_type()}
 
-    def get_clue(self, opponentPlayer: Player, infinityStone: InfinityStone, ):
+    def get_clue(self, opponentPlayer: Player, infinityStone: InfinityStone, guardian):
         two_players_present = False
         if opponentPlayer not in self.give_clue_to_player:
             if self.is_clue_active:
@@ -53,12 +58,14 @@ class Clue(Cell):
                     if guardain_present.get_belongs_to_player() == opponentPlayer:
                         two_players_present = True
                         break
-                if self.type == "enemy_seen":
+                if self.type == "enemy_seen" and False:
                     self.give_clue_to_player.append(opponentPlayer)
                     return Feedback("clue", self.enemy_location(opponentPlayer)), two_players_present
-                elif self.type == "node_Optimal_path":
+                elif self.type == "node_Optimal_path" or True:
                     self.give_clue_to_player.append(opponentPlayer)
-                    return Feedback("clue", self.get_best_direction(infinityStone)), two_players_present
+                    return Feedback("clue", self.get_best_direction(infinityStone, guardian)), two_players_present
+                else:
+                    return None, None
             else:
                 return None, None
         else:

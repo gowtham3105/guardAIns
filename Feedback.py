@@ -33,6 +33,10 @@ class Feedback:
             "code": "INFINITY_STONE_MOVED",
             "message": "Infinity Stone moved"
         },
+        "guardian_moved_infinity_stone": {
+            "code": "GUARDIAN_MOVED_INFINITY_STONE",
+            "message": "Guardian moved Infinity Stone"
+        },
         "infinity_stone_dropped": {
             "code": "INFINITY_STONE_DROPPED",
             "message": "Infinity Stone dropped"

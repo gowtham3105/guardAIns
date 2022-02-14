@@ -22,31 +22,44 @@ PLAYER_ROOM = 'room12'
 def connect():
     print("I'm connected!")
 
+counter = 1
 
 @sio.event
 def action(state):
+    global counter
     print('State: ', state)
     print(type(state))
 
+    # save feedback files
+    fi = open('feedback.json', 'a')
+    fi.write(json.dumps(state['feedback']) + '\n')
+    fi.close()
+
     if PLAYER_ID == 'player1':
+        target = (0, counter)
         action = {
             "action_type": 'MOVE',
-            "troop": "Gamora",
-            'target': '0, 1)',
+            "troop": "Groot",
+            'target': str(target),
             'player_id': PLAYER_ID,
-            'player_password': PLAYER_PASSWORD,
             'round_no': state['round_no']
         }
+        counter += 1
     else:
         action = {
             "action_type": 'ATTACK',
             "troop": "Gamora",
             'target': '(0, 1)',
             'player_id': PLAYER_ID,
-            'player_password': PLAYER_PASSWORD,
             'round_no': state['round_no']
 
         }
+
+    # save action to file
+    fi = open('action.json', 'w')
+    json.dump(action, fi)
+
+    fi.close()
 
     sio.emit('action', action)
 

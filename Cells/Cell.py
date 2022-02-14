@@ -7,7 +7,8 @@ class Cell:
 
     def __init__(self, coordinates, guardian_present=[], neighbour_cells=[], cell_type=Normal):
         self.__coordinates = coordinates
-        self.__guardian_present = guardian_present.copy()  # This should have the guardian sub class object of the guardian
+        self.__guardian_present = guardian_present.copy()  # This should have the guardian sub class object of the
+        # guardian
         # present in the cell
         self.__neighbour_cells = neighbour_cells.copy()
 
@@ -27,7 +28,6 @@ class Cell:
     def add_neighbour_cell(self, cell: 'Cell'):
         if cell not in self.__neighbour_cells:
             self.__neighbour_cells.append(cell)
-
 
     def get_neighbour_cells(self):
         return self.__neighbour_cells

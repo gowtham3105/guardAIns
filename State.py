@@ -50,6 +50,7 @@ class State:
             movegen_as_json[troop_name] = neighbours
 
         feedback_as_json = []
+
         for feed in self.__feedback:
             feedback_as_json.append(feed.json())
 

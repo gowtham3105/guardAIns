@@ -1,0 +1,156 @@
+[
+  {
+    "code": "YOU_HAVE_BEEN_ATTACKED",
+    "message": "You have been attacked, Your Troops health is decreased by this.",
+    "data": {
+      "attacker": "Gamora",
+      "victim_type": "Groot"
+    }
+  },
+  {
+    "code": "ATTACK_SUCCESS",
+    "message": "Attack Success",
+    "data": {
+      "victim_type": "Groot",
+      "attacker": "Gamora"
+    }
+  },
+  {
+    "code": "GUARDIAN_DEAD",
+    "message": "Guardian is dead, Your Score is decreased by this.",
+    "data": {
+      "attacker_type": "Gamora",
+      "victim_type": "Groot"
+    }
+  },
+  {
+    "code": "INVALID_ACTION",
+    "message": "Invalid action, Your Score is decreased by this.",
+    "data": {}
+  },
+  {
+    "code": "TELEPORT_SUCCESS",
+    "message": "Teleport Success",
+    "data": {
+      "coordinates": [
+        8,
+        4
+      ],
+      "guardian": "Rocket"
+    }
+  },
+  {
+    "code": "CLUE",
+    "message": "Clue",
+    "data": {
+      "clue_type": "get_direction_to_infinity_stone",
+      "direction": "-0",
+      "guardian": "Gamora"
+    }
+  },
+  {
+    "code": "CLUE",
+    "message": "Clue",
+    "data": {
+      "clue_type": "get_direction_to_infinity_stone",
+      "direction": "0",
+      "guardian": "Gamora"
+    }
+  },
+  {
+    "code": "CLUE",
+    "message": "Clue",
+    "data": {
+      "clue_type": "get_direction_to_infinity_stone",
+      "direction": "-inf",
+      "guardian": "Gamora"
+    }
+  },
+  {
+    "code": "CLUE",
+    "message": "Clue",
+    "data": {
+      "clue_type": "get_direction_to_infinity_stone",
+      "direction": "inf",
+      "guardian": "Gamora"
+    }
+  },
+  {
+    "code": "CLUE",
+    "message": "Clue",
+    "data": {
+      "clue_type": "get_direction_to_infinity_stone",
+      "direction": "1.56",
+      "guardian": "Gamora"
+    }
+  },
+  {
+    "code": "CLUE",
+    "message": "Clue",
+    "data": {
+      "clue_type": "get_enemy_locations",
+      "data": {
+        "Gamora": [
+          0,
+          0
+        ],
+        "Rocket": [
+          15,
+          7
+        ],
+        "Groot": [
+          0,
+          5
+        ],
+        "Drax": [
+          10,
+          0
+        ],
+        "StarLord": [
+          8,
+          14
+        ]
+      }
+    }
+  },
+  {
+    "code": "INFINITY_STONE_PICKED_UP",
+    "message": "Infinity Stone picked up",
+    "data": {}
+  },
+  {
+    "code": "GUARDIAN_PICKED_UP_INFINITY_STONE",
+    "message": "Guardian picked up Infinity Stone",
+    "data": {
+      "guardian": "Groot"
+    }
+  },
+  {
+    "code": "INFINITY_STONE_DROPPED",
+    "message": "Infinity Stone dropped",
+    "data": {}
+  },
+  {
+    "code": "GUARDIAN_DEAD_AND_INFINITY_STONE_DROPPED",
+    "message": "Guardian is dead and Infinity Stone dropped",
+    "data": {
+      "guardian": "Groot"
+    }
+  },
+  {
+    "code": "INFINITY_STONE_MOVED",
+    "message": "Infinity Stone moved",
+    "data": {}
+  },
+  {
+    "code": "GUARDIAN_MOVED_INFINITY_STONE",
+    "message": "Guardian moved Infinity Stone",
+    "data": {
+      "guardian_coordinates": [
+        0,
+        2
+      ],
+      "guardian": "Groot"
+    }
+  }
+]
