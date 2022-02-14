@@ -30,14 +30,14 @@ def action(state):
     print('State: ', state)
     print(type(state))
 
-    fi = open('state.json', 'w')
-    fi.write(json.dumps(state))
-    fi.close()
+    # fi = open('state.json', 'w')
+    # fi.write(json.dumps(state))
+    # fi.close()
 
     # save feedback files
-    fi = open('feedback.json', 'a')
-    fi.write(json.dumps(state['feedback']) + '\n')
-    fi.close()
+    # fi = open('feedback.json', 'a')
+    # fi.write(json.dumps(state['feedback']) + '\n')
+    # fi.close()
 
     if PLAYER_ID == 'player1':
         target = (0, counter)
@@ -60,10 +60,10 @@ def action(state):
         }
 
     # save action to file
-    fi = open('action.json', 'w')
-    json.dump(action, fi)
-
-    fi.close()
+    # fi = open('action.json', 'w')
+    # json.dump(action, fi)
+    #
+    # fi.close()
 
     sio.emit('action', action)
 

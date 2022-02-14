@@ -1,4 +1,5 @@
 import json
+import random
 import threading
 import time
 from datetime import datetime
@@ -28,40 +29,6 @@ rooms = {
         }
     },
 }
-
-
-def run(sio, room_id):
-    """
-    Main function
-    """
-
-    if room_id not in rooms.keys():
-        return False
-
-    # convert time string to timestamp
-    start_time = datetime.strptime(rooms[room_id]['start_time'], '%b %d %Y %I:%M%p %z')
-    print(start_time)
-    start_time = start_time.timestamp()
-    print(start_time)
-    print(time.time())
-    print(start_time - time.time())
-    start_time = time.time() + 10
-    env = Environment(room_id, start_time, 20, 20, 30, 1, 1)
-    env.create_graph()
-
-    env.print_graph()
-    print(env.is_graph_connected())
-
-    # env.place_special_cells(3, 2, 2, 2)
-
-    print(env.get_graph()[0][0].get_cell_type())
-
-    update_rounds = threading.Thread(target=env.update_rounds, args=(sio,))
-    update_rounds.start()
-
-    # sio.start_background_task(env.update_rounds, sio)
-
-    # print(env.get_player1().get_guardians())
 
 
 def create_socket():
@@ -157,7 +124,9 @@ def main():
                 if auth_details['player_id'] == rooms[auth_details['room']]['player1']['player_id']:
                     if auth_details['password'] == rooms[auth_details['room']]['player1']['password']:
                         if env.get_player1() is None:
-                            env.set_player1(Player(auth_details['player_id'], sid, env.get_graph()[5][2]))
+                            y = random.randint(0, len(env.get_graph()) - 1)
+                            print("Player 1 at " + str(y))
+                            env.set_player1(Player(auth_details['player_id'], sid, env.get_graph()[y][0]))
                             print("player1 connected")
                         else:
                             print("Player Status: ", env.get_player1().is_connected(), " Player ID: ",
@@ -176,7 +145,9 @@ def main():
                     if auth_details['password'] == rooms[auth_details['room']]['player2']['password']:
 
                         if env.get_player2() is None:
-                            env.set_player2(Player(auth_details['player_id'], sid, env.get_graph()[0][0]))
+                            y = random.randint(0, len(env.get_graph()) - 1)
+                            print("Player 2 at: ", y)
+                            env.set_player2(Player(auth_details['player_id'], sid, env.get_graph()[y][-1]))
                             print("player2 connected")
                         else:
                             print("Player Status: ", env.get_player2().is_connected(), " Player ID: ",
