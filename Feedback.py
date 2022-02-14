@@ -61,6 +61,10 @@ class Feedback:
             "code": "STAR_LORD_SPECIAL_POWER",
             "message": "Star Lord Special Power"
         },
+        'healpoint_used': {
+            'code': 'HEALPOINT_USED',
+            'message': 'Healpoint used'
+        },
 
     }
 

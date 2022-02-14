@@ -49,6 +49,7 @@ class InfinityStone:
                             "guardian": self.__guardian.get_type()}), \
                                self.__guardian.get_belongs_to_player().get_player_id()
                     else:
+                        print("Removed form Infinity stone -2323")
                         self.__coordinates.remove_guardian_from_cell(self.__coordinates.get_guardians_present()[0])
                         return None, None, None
                 else:

@@ -40,7 +40,7 @@ def action(state):
         action = {
             "action_type": 'MOVE',
             "troop": "Groot",
-            'target': str(target),
+            'target': '(0, 1)',
             'player_id': PLAYER_ID,
             'round_no': state['round_no']
         }

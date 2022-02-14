@@ -1,1 +1,7 @@
-{"action_type": "ATTACK", "troop": "Gamora", "target": "(0, 1)", "player_id": "player2", "round_no": 2}
+{
+  "action_type": "ATTACK",
+  "troop": "Gamora",
+  "target": "(0, 1)",
+  "player_id": "player2",
+  "round_no": 10
+}

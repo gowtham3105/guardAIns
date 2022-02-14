@@ -92,7 +92,7 @@ def main():
     print(time.time())
     print(start_time - time.time())
     start_time = time.time() + 5
-    env = Environment(ROOM_ID, start_time, 10, 10, 300, 1, 2)
+    env = Environment(ROOM_ID, start_time, 10, 10, 300, 1, 10)
     env.create_graph()
 
     env.print_graph()

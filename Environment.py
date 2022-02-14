@@ -228,7 +228,8 @@ class Environment:
             print("Healpoint placed at: ", y, x)
 
             if self.__graph[y][x].get_cell_type() == 'Normal':
-                self.__graph[y][x] = HealPoint(self.__graph[y][x])
+                self.__graph[1][0] = HealPoint(self.__graph[1][0])
+            print(self.__graph[1][0].get_cell_type(), self.__graph[1][0].get_coordinates())
 
         for i in range(no_of_clues):
             x = random.randint(0, self.__width - 1)
@@ -241,7 +242,7 @@ class Environment:
             print("Clue placed at: ", y, x)
 
             if self.__graph[y][x].get_cell_type() == 'Normal':
-                self.__graph[0][0] = Clue(self.__graph[0][0])
+                self.__graph[y][x] = Clue(self.__graph[y][x])
 
         for i in range(no_of_beasts):
             x = random.randint(0, self.__width - 1)
@@ -264,7 +265,7 @@ class Environment:
             y = random.randint(0, self.__height - 1)
 
         print("Infinity Stone placed at: ", y, x)
-        power_stone = InfinityStone(self.get_graph()[1][0])
+        power_stone = InfinityStone(self.get_graph()[y][x])
         self.__infinity_stone = power_stone
 
 
@@ -409,6 +410,7 @@ class Environment:
 
                 print("Game Over")
                 sio.emit('game_status', 'Game Over')
+                exit(0)
                 return True
 
             player1_state = State(self.movegen(self.get_player1()), self.__player1_feedback,
@@ -473,6 +475,10 @@ class Environment:
                     self.reduce_score(self.get_player2().get_player_id(), "timeout")
                 except Exception as e:
                     print(e)
+                    exception_type, exception_object, exception_traceback = sys.exc_info()
+                    filename = exception_traceback.tb_frame.f_code.co_filename
+                    line_number = exception_traceback.tb_lineno
+
                     print("Exception type: ", exception_type)
                     print("File name: ", filename)
                     print("Line number: ", line_number)
@@ -504,6 +510,7 @@ class Environment:
                 if troop.get_coordinates().get_cell_type() == Cell.Teleporter:
                     dest = troop.get_coordinates().generate_destination(self.__infinity_stone, self.get_graph())
                     if dest.get_cell_type() == Cell.Normal:
+                        print('513')
                         troop.get_coordinates().remove_guardian_from_cell(troop)
                         troop.set_coordinates(dest)
                         troop.get_coordinates().add_guardian_to_cell(troop)
@@ -546,6 +553,11 @@ class Environment:
                             for guardian_in_cell in troop.get_coordinates().get_guardians_present():
                                 guardian_in_cell.set_coordinates(troop.get_coordinates())
 
+                elif troop.get_coordinates().get_cell_type() == Cell.HealPoint:
+                    feedback = troop.get_coordinates().update_rounds_present(self.get_rounds())
+                    if feedback:
+                        self.add_player1_feedback(feedback)
+
             for troop in self.get_player2().get_guardians().values():
                 troop.add_score(troop.get_health() / troop.MAX_HEALTH)
 
@@ -555,6 +567,7 @@ class Environment:
                 if troop.get_coordinates().get_cell_type() == Cell.Teleporter:
                     dest = troop.get_coordinates().generate_destination(self.__infinity_stone, self.get_graph())
                     if dest.get_cell_type() == Cell.Normal:
+                        print('568')
                         troop.get_coordinates().remove_guardian_from_cell(troop)
                         troop.set_coordinates(dest)
                         troop.get_coordinates().add_guardian_to_cell(troop)
@@ -595,6 +608,11 @@ class Environment:
                             guardian_in_cell.set_coordinates(troop.get_coordinates())
 
                         print(troop.get_coordinates(), troop.get_coordinates().get_cell_type())
+
+                elif troop.get_coordinates().get_cell_type() == Cell.HealPoint:
+                    feedback = troop.get_coordinates().update_rounds_present(self.get_rounds())
+                    if feedback:
+                        self.add_player2_feedback(feedback)
 
             self.__rounds += 1
 
@@ -680,21 +698,26 @@ class Environment:
         print(player1_error, player2_error, "errors execute action")
         if not player1_error:
             if player1_action.get_action_type() == Action.MOVE:
+
                 guardian = self.__player1.get_guardian_by_type(
                     player1_action.get_guardian_type())  # update it to return
                 # guardian object directly
-                guardian.get_coordinates().remove_guardian_from_cell(guardian)
-                guardian.set_coordinates(player1_action.get_target(self.__graph))
-                guardian.get_coordinates().add_guardian_to_cell(guardian)
+                if player1_action.get_target(self.__graph) != guardian.get_coordinates():
+                    print('669')
+                    guardian.get_coordinates().remove_guardian_from_cell(guardian)
+                    guardian.set_coordinates(player1_action.get_target(self.__graph))
+                    guardian.get_coordinates().add_guardian_to_cell(guardian)
 
         if not player2_error:
             if player2_action.get_action_type() == Action.MOVE:
                 guardian = self.__player2.get_guardian_by_type(
                     player2_action.get_guardian_type())  # update it to return
                 # guardian object directly
-                guardian.get_coordinates().remove_guardian_from_cell(guardian)
-                guardian.set_coordinates(player2_action.get_target(self.__graph))
-                guardian.get_coordinates().add_guardian_to_cell(guardian)
+                if player2_action.get_target(self.__graph) != guardian.get_coordinates():
+                    print('709')
+                    guardian.get_coordinates().remove_guardian_from_cell(guardian)
+                    guardian.set_coordinates(player2_action.get_target(self.__graph))
+                    guardian.get_coordinates().add_guardian_to_cell(guardian)
 
         if not player1_error:
             if player1_action.get_action_type() == Action.ATTACK:
@@ -714,6 +737,7 @@ class Environment:
                                 feedback.set_data({"attacker_type": our_guardian.get_type(),
                                                    'victim_type': guardian.get_type()})
                                 print("Guardians Present are ", guardian.get_coordinates().get_guardians_present())
+                                print('732')
                                 guardian.get_coordinates().remove_guardian_from_cell(guardian)
                                 print("Guardians Present after removing",
                                       guardian.get_coordinates().get_guardians_present())
@@ -745,6 +769,7 @@ class Environment:
                                                    'victim_type': guardian.get_type()})
 
                                 print("Guardians Present are 22", guardian.get_coordinates().get_guardians_present())
+                                print('764')
                                 guardian.get_coordinates().remove_guardian_from_cell(guardian)
                                 print("Guardians Present after removing22",
                                       guardian.get_coordinates().get_guardians_present())

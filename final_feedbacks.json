@@ -152,5 +152,12 @@
       ],
       "guardian": "Groot"
     }
+  },
+  {
+    "code": "HEALPOINT_USED",
+    "message": "Healpoint used",
+    "data": {
+      "guardian": "Groot"
+    }
   }
 ]
