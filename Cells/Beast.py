@@ -1,26 +1,34 @@
 from Cells.Cell import Cell
 from Cells.Clue import Clue
-from Feedback import Feedback
-from InfinityStone import InfinityStone
 from Player import Player
 
 
 class Beast(Clue):
     def __init__(self, cell: Cell):
         super().__init__(cell, Cell.Beast)
-        self.__is_alive = True
+        self.__damage = 25
 
-    def update_health(self,
-                      player: Player, opponentPlayer:Player, infinityStone: InfinityStone): 
-     # call this in update rounds every round for each player and it returns the clue if available
-        if self.__is_alive:
-            if len(self.__rounds_left) > 0:
-                self.__rounds_left -= 1
-            guardian = self.get_guardians_present()[0] # reduces health of beast which is first in list.
+    def update_health(self, player: Player, opponent: Player, infinity_stone, round_no):
+        if self.get_clue_active():
+            guardian = self.get_guardians_present()[0]
+            counter = 0
+            while guardian.get_belongs_to_player() != player:
+                guardian = self.get_guardians_present()[counter]
+                counter += 1
             if guardian.belongs_to_player == player:
-                reduce_health = guardian.set_health(guardian.get_health() - self.__damage)
-                if reduce_health != None:
-                    return reduce_health
+                if opponent not in self.give_clue_to_player:
+                    two_guardians_present = False
+                    for guardian_present in self.get_guardians_present():
+                        if guardian_present.belongs_to_player == opponent:
+                            two_guardians_present = True
+                            break
+                    reduce_health = guardian.set_health(guardian.get_health() - self.__damage, round_no)
+                    if reduce_health is not None:
+                        self.give_clue_to_player.append(opponent)
+                        return reduce_health, two_guardians_present
+                    else:
+                        return self.get_clue(opponent, infinity_stone, guardian)
                 else:
-                    clue = Feedback("clue", self.get_clue(opponentPlayer=opponentPlayer,infinityStone=infinityStone))
-                    return clue
+                    return None, None
+            else:
+                return None, None

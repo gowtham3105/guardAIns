@@ -7,7 +7,8 @@ class Cell:
 
     def __init__(self, coordinates, guardian_present=[], neighbour_cells=[], cell_type=Normal):
         self.__coordinates = coordinates
-        self.__guardian_present = guardian_present.copy()  # This should have the guardian sub class object of the guardian
+        self.__guardian_present = guardian_present.copy()  # This should have the guardian sub class object of the
+        # guardian
         # present in the cell
         self.__neighbour_cells = neighbour_cells.copy()
 
@@ -28,7 +29,6 @@ class Cell:
         if cell not in self.__neighbour_cells:
             self.__neighbour_cells.append(cell)
 
-
     def get_neighbour_cells(self):
         return self.__neighbour_cells
 
@@ -41,10 +41,14 @@ class Cell:
     def add_guardian_to_cell(self, guardian):  # this guardian should be of the type Drax, Gamora etc
 
         self.__guardian_present.append(guardian)
+        if self.get_cell_type() == Cell.HealPoint:
+            self.add_to_rounds_present(guardian)
 
     def remove_guardian_from_cell(self, guardian):
         if guardian in self.__guardian_present:
             self.__guardian_present.remove(guardian)
+            if self.get_cell_type() == Cell.HealPoint:
+                self.remove_from_rounds_present(guardian)
         else:
             raise (ValueError("Guardian not present in the cell"))
             print("Guardian not found in the cell")

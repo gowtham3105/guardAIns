@@ -6,6 +6,8 @@ from Guardian import Guardian
 
 
 class Rocket(Guardian):
+    MAX_HEALTH = 75
+
     def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.__health = 75
         self.__attack_damage = 35

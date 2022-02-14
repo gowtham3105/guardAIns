@@ -6,6 +6,8 @@ from Guardian import Guardian
 
 
 class Drax(Guardian):
+    MAX_HEALTH = 150
+
     def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.__health = 150
         self.__attack_damage = 70
@@ -47,8 +49,8 @@ class Drax(Guardian):
     def get_cooldown(self):
         return self.__cooldown
 
-    def set_cooldown(self):
-        self.__cooldown = 3
+    def set_cooldown(self, round_no):
+        self.__cooldown = 3 + round_no
 
     def update_cooldown(self):
         if self.__cooldown > 0:

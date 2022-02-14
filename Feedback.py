@@ -33,13 +33,37 @@ class Feedback:
             "code": "INFINITY_STONE_MOVED",
             "message": "Infinity Stone moved"
         },
+        "guardian_moved_infinity_stone": {
+            "code": "GUARDIAN_MOVED_INFINITY_STONE",
+            "message": "Guardian moved Infinity Stone"
+        },
         "infinity_stone_dropped": {
             "code": "INFINITY_STONE_DROPPED",
             "message": "Infinity Stone dropped"
         },
+        "guardian_died_and_infinity_stone_dropped": {
+            "code": "GUARDIAN_DEAD_AND_INFINITY_STONE_DROPPED",
+            "message": "Guardian is dead and Infinity Stone dropped"
+        },
         "infinity_stone_picked_up": {
             "code": "INFINITY_STONE_PICKED_UP",
             "message": "Infinity Stone picked up"
+        },
+        "guardian_picked_up_infinity_stone": {
+            "code": "GUARDIAN_PICKED_UP_INFINITY_STONE",
+            "message": "Guardian picked up Infinity Stone"
+        },
+        "clue": {
+            "code": "CLUE",
+            "message": "Clue"
+        },
+        "star_lord_special_power": {
+            "code": "STAR_LORD_SPECIAL_POWER",
+            "message": "Star Lord Special Power"
+        },
+        'healpoint_used': {
+            'code': 'HEALPOINT_USED',
+            'message': 'Healpoint used'
         },
 
     }

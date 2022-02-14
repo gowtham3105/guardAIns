@@ -6,6 +6,8 @@ from Guardian import Guardian
 
 
 class StarLord(Guardian):
+    MAX_HEALTH = 100
+
     def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.__health = 100
         self.__attack_damage = 35

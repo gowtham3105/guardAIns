@@ -2,10 +2,9 @@ from Cells.Cell import Cell
 from Guardian import Guardian
 
 
-# from Player import Player
-
-
 class Gamora(Guardian):
+    MAX_HEALTH = 125
+
     def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.__health = 125
         self.__attack_damage = 50
@@ -48,8 +47,8 @@ class Gamora(Guardian):
     def get_cooldown(self):
         return self.__cooldown
 
-    def set_cooldown(self):
-        self.__cooldown = 3
+    def set_cooldown(self, round_no):
+        self.__cooldown = 3 + round_no
 
     def update_cooldown(self):
         if self.__cooldown > 0:

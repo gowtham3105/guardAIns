@@ -6,6 +6,8 @@ from Guardian import Guardian
 
 
 class Groot(Guardian):
+    MAX_HEALTH = 200
+
     def __init__(self, belongs, init_coordinates: Cell, alive=True):
         self.__health = 200
         self.__attack_damage = 25
@@ -14,10 +16,8 @@ class Groot(Guardian):
         self.__cooldown = 0
         super().__init__(belongs, init_coordinates, alive)
 
-    def special_ability(self):
-        # Call this in updation of each round
-        # and increase health by 5
-        return 0
+    def special_ability(self, round_no):
+        self.set_health(self.get_health() + 5, round_no)
 
     def get_health(self):
         return self.__health
