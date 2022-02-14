@@ -21,8 +21,8 @@ def connect():
 
 
 @sio.event
-def game_status(state):
-    #Code here to get the game status
+def game_status(status):
+    # Code here to get the game status
     pass
 
 @sio.event

@@ -1,33 +1,18 @@
-from Cells.Cell import Cell
+from Feedback import Feedback
+from InfinityStone import InfinityStone
+from Player import Player
 
 
 class State:
-    def __init__(self, movegen: dict, feedback, penalty_score, round_no) -> None:
+    # This class is data given for users.  for now penality score, feedback, movegen, player's troops info.
+    def __init__(self, movegen: dict, feedback, penalty_score, round_no, player: Player,
+                 infinityStone: InfinityStone) -> None:
         self.__feedback = feedback
         self.__penalty_score = penalty_score
         self.__round_no = round_no
-        # Copy movegen  to avoid reference
-
-        temp_movgen = {}
-
-        for troop_name, troop in movegen.items():
-            neighbours = []
-            for cell_list in troop:
-                side = []
-                for cell in cell_list:
-                    new_cell = Cell(cell.get_coordinates(), cell.get_guardians_present(), cell.get_neighbour_cells(),
-                                    cell.get_cell_type())
-                    side.append(new_cell)
-                neighbours.append(side)
-            temp_movgen[troop_name] = neighbours
-        self.__movegen = temp_movgen
-
-        for troop in self.__movegen.values():
-            for cell_list in troop:
-                for cell in cell_list:
-                    cell.remove_neighbours()
-
         self.__movegen = movegen
+        self.__player = player
+        self.__infinityStone = infinityStone
 
     def get_movegen(self):
         return self.__movegen
@@ -42,15 +27,71 @@ class State:
         movegen_as_json = {}
         for troop_name, troop in self.__movegen.items():
             neighbours = []
+            if troop_name == "StarLord":
+                starlord_list = []
+                for side in troop[1]:
+                    side_list = []
+                    for curr_cell in side:
+                        side_list.append(curr_cell.get_coordinates())
+                    starlord_list.append(side_list)
+
+                starLord_vision = Feedback("star_lord_special_power", {"special_vision": starlord_list})
+                self.__feedback.append(starLord_vision)
+                troop = troop[0]
+
             for cell_list in troop:
                 side = []
                 for cell in cell_list:
-                    side.append(str(cell))
+                    guardian_present_list = []
+                    for i in cell.get_guardians_present():
+                        if i.get_belongs_to_player().get_player_id() == self.__player.get_player_id():
+                            data = {
+                                "belongs_to": 'you',
+                                "guardian_name": i.get_type()
+                            }
+                            guardian_present_list.append(data)
+                            print(data)
+                        else:
+                            data = {
+                                "belongs_to": 'opponent',
+                                "guardian_name": i.get_type()
+                            }
+                            guardian_present_list.append(data)
+                    side.append({"coordinates": str(cell.get_coordinates()),
+                                 "cell_type": cell.get_cell_type(),
+                                 "is_powerStone_present": str(cell.get_coordinates(
+                                 ) == self.__infinityStone.get_coordinates()),
+                                 'guardians_present': guardian_present_list})
+
                 neighbours.append(side)
-            movegen_as_json[troop_name] = neighbours
+            #
+            guardian = self.__player.get_guardian_by_type(troop_name)
+
+            guardian_present_list = []
+            for i in guardian.get_coordinates().get_guardians_present():
+                if i.get_belongs_to_player().get_player_id() == self.__player.get_player_id():
+                    data = {
+                        "belongs_to": 'you',
+                        "guardian_name": i.get_type()
+                    }
+                    guardian_present_list.append(data)
+                else:
+                    data = {
+                        "belongs_to": 'opponent',
+                        "guardian_name": i.get_type()
+                    }
+                    guardian_present_list.append(data)
+
+            current_cell = {"coordinates": str(guardian.get_coordinates().get_coordinates()),
+                            "cell_type": guardian.get_coordinates().get_cell_type(),
+                            "is_powerStone_present": str(guardian.get_coordinates(
+                            ) == self.__infinityStone.get_coordinates()),
+                            'guardians_present': guardian_present_list}
+
+            movegen_as_json[troop_name] = {"health": guardian.get_health(), "cooldown": guardian.get_cooldown(),
+                                           "current_cell": current_cell, "neighbour_cells": neighbours}
 
         feedback_as_json = []
-
         for feed in self.__feedback:
             feedback_as_json.append(feed.json())
 

@@ -308,6 +308,27 @@ class Environment:
                         ][possible_neighbour[1]]
                     else:
                         break
+
+            if key == "StarLord":
+                return_dict[key] = [return_dict[key], [[], [], [], []]]
+                # return all the cells that are in the vision of StarLord even if wall is in between
+                for i in range(4):  # 0 - up, 1 - left, 2 - down, 3 - right
+                    dir_ver = 0
+                    dir_hor = 0
+                    current_coordinates = current_guardian_obj.coordinates.get_coordinates()
+                    current_cell = current_guardian_obj.coordinates
+                    if i == 0 or i == 2:
+                        dir_ver = i - 1
+                    else:
+                        dir_hor = i - 2
+                    for x in range(1, current_guardian_obj.get_vision() + 1):
+                        possible_neighbour = (
+                            current_coordinates[0] + dir_ver * x, current_coordinates[1] + dir_hor * x)
+                        if possible_neighbour[0] < 0 or possible_neighbour[0] >= self.__height or possible_neighbour[
+                            1] < 0 or possible_neighbour[1] >= self.__width:
+                            break
+                        return_dict[key][1][i].append(
+                            self.__graph[possible_neighbour[0]][possible_neighbour[1]])
         return return_dict
 
     def update_rounds(self, sio):
@@ -413,9 +434,11 @@ class Environment:
                 return True
 
             player1_state = State(self.movegen(self.get_player1()), self.__player1_feedback,
-                                  self.__player1_penalty_score, self.get_rounds())
+                                  self.__player1_penalty_score, self.get_rounds(), self.get_player1(),
+                                  self.__infinity_stone)
             player2_state = State(self.movegen(self.get_player2()), self.__player2_feedback,
-                                  self.__player2_penalty_score, self.get_rounds())
+                                  self.__player2_penalty_score, self.get_rounds(), self.get_player2(),
+                                  self.__infinity_stone)
 
             player1_error = False
             player2_error = False

@@ -30,6 +30,10 @@ def action(state):
     print('State: ', state)
     print(type(state))
 
+    fi = open('state.json', 'w')
+    fi.write(json.dumps(state))
+    fi.close()
+
     # save feedback files
     fi = open('feedback.json', 'a')
     fi.write(json.dumps(state['feedback']) + '\n')
