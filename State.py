@@ -1,4 +1,5 @@
 import imp
+from Feedback import Feedback
 from Guardians.Gamora import Gamora
 from InfinityStone import InfinityStone
 from Player import Player
@@ -33,7 +34,8 @@ class State:
         for troop_name, troop in self.__movegen.items():
             neighbours = []
             if troop_name == "StarLord":
-                starLord_vision = troop[1]
+                starLord_vision = Feedback("STAR_LORD_SPECIAL_POWER",{"special_vision":troop[1]})
+                self.__feedback.append(starLord_vision)
                 troop = troop[0]
 
             for cell_list in troop:
@@ -47,9 +49,6 @@ class State:
             )) == str(self.__infinityStone.get_coordinates())), 'guardians_present': [{i.belongs_to_player, i.__class__.__name__} for i in guardian.get_guardians_present()]}
 
             movegen_as_json[troop_name] = {"health": guardian.health, "cooldown": guardian.get_cooldown,"current_cell": current_cell,  "neighbour_cells": neighbours}
-            if troop_name == "StarLord":
-                # starLord_vision is a neighbour_cells list with out wall limits.
-                movegen_as_json[troop_name]["special_vision"] = starLord_vision
         feedback_as_json = []
         for feed in self.__feedback:
             feedback_as_json.append(feed.json())
