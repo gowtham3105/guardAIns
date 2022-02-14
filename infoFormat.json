@@ -1,0 +1,44 @@
+{
+    "movegen":
+            {
+                "guardian_name":
+                        {
+                            "health": "health-int",
+                            "cool_down": "cool_down-int",
+                            "current_cell":
+                            {
+                                "coordinates": "(x,y)",
+                                "cell_type": "cell_type-str",
+                                "is_powerStone_present": "is_powerStone_present-bool",
+                                "guardians_present": [
+                                    {
+                                        "belogns_to": "belongs_to",
+                                        "guardian_name": "guardian_name"
+                                    }
+                                ]
+                            },
+                            "neighbour_cells" : 
+                            [[
+                                {
+                                    "coordinates": "(x,y)",
+                                    "cell_type": "cell_type-str",
+                                    "is_powerStone_present": "is_powerStone_present-bool",
+                                    "guardians_present": [
+                                        {
+                                            "belogns_to": "belongs_to",
+                                            "guardian_name": "guardian_name"
+                                        }
+                                    ]
+                                }
+                            ]]
+                        }
+            },
+    "feedback": 
+        {
+            "code": "codestring",
+            "message": "messagestring",
+            "data": "dataobject"
+        },
+    "penalty_score":  "int",
+    "round_no":  "int"
+}

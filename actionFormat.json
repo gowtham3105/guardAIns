@@ -1,0 +1,7 @@
+{
+    "action_type": "action_type",
+    "guardian": "guardian_name",
+    "target": "(x,y)",
+    "player_id": "player_id",
+    "round_no": "current_round_no"
+}
