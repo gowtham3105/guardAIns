@@ -613,6 +613,30 @@ class Environment:
 
         if guardian is not None:
             if guardian.is_alive():
+                if action.get_action_type() == "SPECIAL":
+                    #check for cool down first then this
+                    if action.get_guardian_type()=="Gamora":
+                        tg=action.get_target(self.get_graph()).get_coordinates()
+                        cg=guardian.get_coordinates()
+                        if (tg.coordinates[0]-cg.coordinates[0])**2 + (tg.coordinates[1]+cg.coordinates[1])**2 < 25:
+                            return True
+                        else:
+                            print("target out of range SPECIAL jump")
+                            return False
+                    elif action.get_guardian_type=="Drax":
+                        tg=action.get_target(self.get_graph())
+                        cg=guardian.get_coordinates()
+                        if (tg.coordinates[0]==1+cg.coordinates[0] or tg.coordinates[0]==1-cg.coordinates[0]) and (tg.coordinates[1]==1+cg.coordinates[1] or tg.coordinates[1]==1-cg.coordinates[1]):
+                            return True
+                        else:
+                            print("target range out of range SPECIAL break walls")
+                            return False
+                    else:
+                        print("Invalid guardian type SPECIAL")
+                        return False
+                        # self.add_player2_feedback(Feedback("INVALID_MOVE",
+                        #                                     {"current_cell": cg,
+                        #                                     "target cell":"distance out of jump range of gamora(5)"}))
                 if action.get_action_type() == "ATTACK":
 
                     if ((guardian.coordinates.get_coordinates()[0] - guardian.get_vision()) <=
@@ -671,7 +695,7 @@ class Environment:
 
         print(player1_error, player2_error, "errors execute action")
 
-        if player1_action.get_action_type() == Action.ATTACK and player1_action.get_guardian_type('Rocket'):
+        if player1_action.get_action_type() == Action.ATTACK and player1_action.get_guardian_type() == "Rocket":
             #PLAYER 1 ROCKET
             guardians_present = player1_action.get_target(self.get_graph()).get_guardians_present()
             our_guardian = self.__player1.get_guardian_by_type(
@@ -695,7 +719,7 @@ class Environment:
                         self.add_player2_feedback(Feedback("you_have_been_attacked",
                                                             {"attacker": our_guardian.get_type(),
                                                             "victim_type": guardian.get_type()}))
-        if player2_action.get_action_type() == Action.ATTACK and player2_action.get_guardian_type('Rocket'):
+        if player2_action.get_action_type() == Action.ATTACK and player2_action.get_guardian_type() == "Rocket":
             #PLAYER 2 ROCKET
             guardians_present = player2_action.get_target(self.get_graph()).get_guardians_present()
             our_guardian = self.__player2.get_guardian_by_type(
@@ -725,20 +749,21 @@ class Environment:
             if(player1_action.get_guardian_type() == "Gamora"):
                 tg=player1_action.get_target(self.get_graph())
                 cg=self.__player1.get_guardian_by_type(player1_action.get_guardian_type).get_coordinates()
-                if (tg.coordinates[0]-cg.coordinates[0])**2 + (tg.coordinates[1]+cg.coordinates[1])**2 > 25:
-                    self.add_player1_feedback(Feedback("INVALID_MOVE",
-                                                        {"current_cell": cg,
-                                                        "target cell":"distance out of jump range of gamora(5)"}))
-                else:
-                    guardian = self.__player1.get_guardian_by_type(
-                        player1_action.get_guardian_type())  # update it to return
-                    # guardian object directly
-                    cg.remove_guardian_from_cell(guardian)
-                    guardian.set_coordinates(tg)
-                    tg.add_guardian_to_cell(guardian)
+                guardian = self.__player1.get_guardian_by_type(
+                    player1_action.get_guardian_type())  # update it to return
+                # guardian object directly
+                cg.remove_guardian_from_cell(guardian)
+                guardian.set_coordinates(tg)
+                tg.add_guardian_to_cell(guardian)
+                # self.add_player1_feedback(Feedback("move_success",
+                #                                     {"guardian_type": player1_action.get_guardian_type(),
+                #                                     "target_type": tg.get_type()}))
+
             elif(player1_action.get_guardian_type() == "Drax"):
-                current_cell_obj=self.__player1.get_guardian_by_type(player1_action.get_guardian_type).get_coordinates()
-                self.break_walls(current_cell_obj)
+                tg=player1_action.get_target(self.get_graph())
+                cg=self.__player1.get_guardian_by_type(player1_action.get_guardian_type).get_coordinates()
+                tg.neighbors.append(cg)
+                cg.neighbors.append(tg)
 
         
         if player2_action.get_action_type() == Action.SPECIAL:
@@ -746,20 +771,21 @@ class Environment:
             if(player2_action.get_guardian_type() == "Gamora"):
                 tg=player2_action.get_target(self.get_graph())
                 cg=self.__player2.get_guardian_by_type(player2_action.get_guardian_type).get_coordinates()
-                if (tg.coordinates[0]-cg.coordinates[0])**2 + (tg.coordinates[1]+cg.coordinates[1])**2 > 25:
-                    self.add_player2_feedback(Feedback("INVALID_MOVE",
-                                                        {"current_cell": cg,
-                                                        "target cell":"distance out of jump range of gamora(5)"}))
-                else:
-                    guardian = self.__player2.get_guardian_by_type(
-                        player2_action.get_guardian_type())  # update it to return
-                    # guardian object directly
-                    cg.remove_guardian_from_cell(guardian)
-                    guardian.set_coordinates(tg)
-                    tg.add_guardian_to_cell(guardian)
+                guardian = self.__player2.get_guardian_by_type(
+                    player2_action.get_guardian_type())  # update it to return
+                # guardian object directly
+                cg.remove_guardian_from_cell(guardian)
+                guardian.set_coordinates(tg)
+                tg.add_guardian_to_cell(guardian)
+                # self.add_player1_feedback(Feedback("move_success",
+                #                                     {"guardian_type": player1_action.get_guardian_type(),
+                #                                     "target_type": tg.get_type()}))
+
             elif(player2_action.get_guardian_type() == "Drax"):
-                current_cell_obj=self.__player2.get_guardian_by_type(player2_action.get_guardian_type).get_coordinates()
-                self.break_walls(current_cell_obj)
+                tg=player1_action.get_target(self.get_graph())
+                cg=self.__player2.get_guardian_by_type(player2_action.get_guardian_type).get_coordinates()
+                tg.neighbors.append(cg)
+                cg.neighbors.append(tg)
     
         if player1_action.get_action_type() == Action.MOVE:
             #PLAYER 1 MOVE
