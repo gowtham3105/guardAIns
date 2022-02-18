@@ -59,15 +59,10 @@ def main():
     print(time.time())
     print(start_time - time.time())
     start_time = time.time() + 5
-    env = Environment(ROOM_ID, start_time, 10, 10, 300, 1, 2)
+    env = Environment(ROOM_ID, start_time, 5, 5, 300, 1, 300)
     env.create_graph()
 
     env.print_graph()
-    print(env.get_graph()[0][0].get_neighbour_cells())
-    print(env.get_graph()[1][0].get_neighbour_cells())
-    print(env.get_graph()[0][1].get_neighbour_cells())
-    print(env.get_graph()[2][1].get_neighbour_cells())
-
     print(env.is_graph_connected())
 
     if not env.place_special_cells(3, 2, 2, 2):
@@ -81,26 +76,29 @@ def main():
     def action(sid, data):
         if sid == env.get_player1().get_socket_id():
             try:
-                current_action = Action.get_obj_from_json(data)
+                current_action = Action.get_obj_from_json(data, env.get_graph())
+                print(current_action.json(), "player1")
                 if current_action:
                     env.add_action_to_player1(current_action)
                 else:
                     raise Exception("Invalid action")
 
             except Exception as e:
-                env.add_player1_feedback(Feedback("error", "Invalid action"))
-                env.reduce_score(env.get_player1(), "invalid_action")
+                env.add_player1_feedback(Feedback("error", {"data": "Invalid action"}))
+                env.reduce_score(env.get_player1().get_player_id(), "invalid_action")
                 print(e)
         elif sid == env.get_player2().get_socket_id():
             try:
-                current_action = Action.get_obj_from_json(data)
+                current_action = Action.get_obj_from_json(data, env.get_graph())
+                print(current_action.json(), "player2")
+
                 if current_action:
                     env.add_action_to_player2(current_action)
                 else:
                     raise Exception("Invalid action")
             except Exception as e:
-                env.add_player2_feedback(Feedback("error", "Invalid action"))
-                env.reduce_score(env.get_player2(), "invalid_action")
+                env.add_player2_feedback(Feedback("error", {"data": "Invalid action"}))
+                env.reduce_score(env.get_player2().get_player_id(), "invalid_action")
                 print(e)
         else:
             print('invalid user')
@@ -201,7 +199,7 @@ def main():
 
     # start the server
 
-    eventlet.wsgi.server(eventlet.listen(('', 5000)), app)
+    eventlet.wsgi.server(eventlet.listen(('', 9000)), app)
 
 
 if __name__ == '__main__':

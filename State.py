@@ -50,7 +50,6 @@ class State:
                                 "guardian_name": i.get_type()
                             }
                             guardian_present_list.append(data)
-                            print(data)
                         else:
                             data = {
                                 "belongs_to": 'opponent',

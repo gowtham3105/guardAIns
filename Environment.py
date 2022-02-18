@@ -212,7 +212,6 @@ class Environment:
                 x = random.randint(0, self.__width - 1)
                 y = random.randint(0, self.__height - 1)
 
-            print("Teleporter placed at: ", y, x)
 
             if self.__graph[y][x].get_cell_type() == 'Normal':
                 self.__graph[y][x] = Teleporter(self.__graph[y][x])
@@ -225,8 +224,6 @@ class Environment:
                 x = random.randint(0, self.__width - 1)
                 y = random.randint(0, self.__height - 1)
 
-            print("Healpoint placed at: ", y, x)
-
             if self.__graph[y][x].get_cell_type() == 'Normal':
                 self.__graph[y][x] = HealPoint(self.__graph[y][x])
 
@@ -238,7 +235,6 @@ class Environment:
                 x = random.randint(0, self.__width - 1)
                 y = random.randint(0, self.__height - 1)
 
-            print("Clue placed at: ", y, x)
 
             if self.__graph[y][x].get_cell_type() == 'Normal':
                 self.__graph[y][x] = Clue(self.__graph[y][x])
@@ -251,7 +247,6 @@ class Environment:
                 x = random.randint(0, self.__width - 1)
                 y = random.randint(0, self.__height - 1)
 
-            print("Beast placed at: ", y, x)
 
             if self.__graph[y][x].get_cell_type() == 'Normal':
                 self.__graph[y][x] = Beast(self.__graph[y][x])
@@ -297,17 +292,25 @@ class Environment:
                     dir_hor = i - 2  # dir_hor = -1 or 1
                 for x in range(1, current_guardian_obj.get_vision() + 1):
                     possible_neighbour = (
-                        current_coordinates[0] + dir_ver * x, current_coordinates[1] + dir_hor * x)
+                        current_coordinates[1] + dir_ver * x, current_coordinates[0] + dir_hor * x)
+                    # print("Possible neighbour1: ", possible_neighbour)
                     if possible_neighbour[0] < 0 or possible_neighbour[0] >= self.__height or possible_neighbour[
                         1] < 0 or possible_neighbour[1] >= self.__width:
                         break
-                    if self.__graph[possible_neighbour[0]][possible_neighbour[1]] in current_cell.get_neighbour_cells():
+                    # print("Possible neighbour2: ", possible_neighbour)
+                    # print(self.__graph[possible_neighbour[0]][possible_neighbour[1]])
+                    # print(current_cell.get_neighbour_cells())
+                    neighbour_cells_tuples = [x.get_coordinates() for x in current_cell.get_neighbour_cells()]
+
+                    if self.__graph[possible_neighbour[0]][
+                        possible_neighbour[1]].get_coordinates() in neighbour_cells_tuples:
                         return_dict[key][i].append(
                             self.__graph[possible_neighbour[0]][possible_neighbour[1]])
                         current_cell = self.__graph[possible_neighbour[0]
                         ][possible_neighbour[1]]
                     else:
                         break
+                    # print("Possible neighbour3: ", possible_neighbour)
 
             if key == "StarLord":
                 return_dict[key] = [return_dict[key], [[], [], [], []]]
@@ -370,26 +373,28 @@ class Environment:
                     self.__winner = self.get_player1()
                     self.__game_over = True
                     self.__infinity_stone.set_returned_to_base(True)
-                    print("Player 1 is the Winner")
+                    print("Player 1 is the Winner, because of Infinity Stone reached to base",
+                          self.__infinity_stone.get_coordinates())
                     sio.emit('game_status', 'Player 1 is the Winner')
                     return True
                 if self.__infinity_stone.get_coordinates() == self.get_player2().get_base_coordinates():
                     self.__winner = self.get_player2()
                     self.__game_over = True
                     self.__infinity_stone.set_returned_to_base(True)
-                    print("Player 2 is the Winner")
+                    print("Player 2 is the Winner because of Infinity Stone reached to base",
+                          self.__infinity_stone.get_coordinates())
                     sio.emit('game_status', 'Player 2 is the Winner')
                     return True
             if self.__player1_penalty_score < 0 <= self.__player2_penalty_score:  # player 2 wins
                 self.__winner = self.__player2
                 self.__game_over = True
-                print("Player 2 is the Winner")
+                print("Player 2 is the Winner because of Penalty Score")
                 sio.emit('game_status', 'Player 2 is the Winner')
                 return True
             if self.__player2_penalty_score < 0 <= self.__player1_penalty_score:  # player 1 wins
                 self.__winner = self.__player1
                 self.__game_over = True
-                print("Player 1 is the Winner")
+                print("Player 1 is the Winner because of Penalty Score")
                 sio.emit('game_status', 'Player 1 is the Winner')
                 return True
             if self.__player1_penalty_score < 0 and self.__player2_penalty_score < 0:  # draw
@@ -397,7 +402,7 @@ class Environment:
                 if winner is self.__player1:
                     self.__winner = self.__player1
                     self.__game_over = True
-                    print("Player 1 is the Winner")
+                    print("Player 1 is the Winner because of Draw and evaluate draw said ")
                     sio.emit('game_status', 'Player 1 is the Winner')
                     return True
                 elif winner is self.__player2:
@@ -405,6 +410,7 @@ class Environment:
                     self.__game_over = True
                     print("Player 2 is the Winner")
                     sio.emit('game_status', 'Player 2 is the Winner')
+
                     return True
                 else:
                     self.__winner = None
@@ -439,6 +445,11 @@ class Environment:
             player2_state = State(self.movegen(self.get_player2()), self.__player2_feedback,
                                   self.__player2_penalty_score, self.get_rounds(), self.get_player2(),
                                   self.__infinity_stone)
+
+            print("Player 2's Gamora neighbours are: ",
+                  self.get_player2().get_guardian_by_type('Gamora').get_coordinates().get_neighbour_cells())
+            # print("Player 1 State:", player1_state.json())
+            # print("Player 2 State:", player2_state.json()['mov'])
 
             player1_error = False
             player2_error = False
@@ -510,7 +521,6 @@ class Environment:
             else:
                 player2_error = True
 
-            # print(player1_action, player2_action)
             self.execute_action(player1_action, player2_action, player1_error, player2_error)
             if self.__infinity_stone:
                 feedback, feedback_to_player, player_id = self.__infinity_stone.update_coordinates()
@@ -532,7 +542,6 @@ class Environment:
                 if troop.get_coordinates().get_cell_type() == Cell.Teleporter:
                     dest = troop.get_coordinates().generate_destination(self.__infinity_stone, self.get_graph())
                     if dest.get_cell_type() == Cell.Normal:
-                        print('513')
                         troop.get_coordinates().remove_guardian_from_cell(troop)
                         troop.set_coordinates(dest)
                         troop.get_coordinates().add_guardian_to_cell(troop)
@@ -589,7 +598,6 @@ class Environment:
                 if troop.get_coordinates().get_cell_type() == Cell.Teleporter:
                     dest = troop.get_coordinates().generate_destination(self.__infinity_stone, self.get_graph())
                     if dest.get_cell_type() == Cell.Normal:
-                        print('568')
                         troop.get_coordinates().remove_guardian_from_cell(troop)
                         troop.set_coordinates(dest)
                         troop.get_coordinates().add_guardian_to_cell(troop)
@@ -629,7 +637,6 @@ class Environment:
                         for guardian_in_cell in troop.get_coordinates().get_guardians_present():
                             guardian_in_cell.set_coordinates(troop.get_coordinates())
 
-                        print(troop.get_coordinates(), troop.get_coordinates().get_cell_type())
 
                 elif troop.get_coordinates().get_cell_type() == Cell.HealPoint:
                     feedback = troop.get_coordinates().update_rounds_present(self.get_rounds())
@@ -639,7 +646,7 @@ class Environment:
             self.__rounds += 1
             sio.emit('game_status', "Game Running - Round " + str(self.__rounds))
             print("Round: ", self.__rounds)
-            # time.sleep(0.5)
+            time.sleep(5)
             self.get_reduced_score()
             print("Player 1 Score: ", self.get_player1_penality_score())
             print("Player 2 Score: ", self.get_player2_penality_score())
@@ -671,10 +678,8 @@ class Environment:
 
                     if guardian.get_cooldown() < self.get_rounds():
                         return False
-                    print("Guardian is alive")
                     # check for cool down first then this
                     if action.get_guardian_type() == "Gamora":
-                        print("Gamora is SPECIAL")
                         tg = action.get_target(self.get_graph()).get_coordinates()
                         cg = guardian.get_coordinates().get_coordinates()
                         if ((tg[0] - cg[0]) ** 2 + (tg[1] + cg[1]) ** 2) <= 25:
@@ -683,11 +688,8 @@ class Environment:
                             print("target out of range SPECIAL jump")
                             return False
                     elif action.get_guardian_type() == "Drax":
-                        print("Drax is SPECIAL")
                         tg = action.get_target(self.get_graph()).get_coordinates()
                         cg = guardian.get_coordinates().get_coordinates()
-                        print("init:", guardian.get_coordinates().get_neighbour_cells())
-                        print(self.__graph[cg[1]][cg[0]].get_neighbour_cells())
                         if ((tg[0] == 1 + cg[0] or tg[0] == cg[0] - 1) and tg[1] == cg[1]) or (
                                 (tg[1] == 1 + cg[1] or tg[1] == cg[1] - 1) and tg[0] == cg[0]):
                             return True
@@ -735,7 +737,6 @@ class Environment:
             return False
 
     def execute_action(self, player1_action: Action, player2_action: Action, player1_error: bool, player2_error: bool):
-        # print("player1: ", self.get_player1().get_guardians(), "player2", self.__player2.get_guardians())
 
         if not player1_error:
             if not self.validate_action(player1_action):
@@ -762,7 +763,6 @@ class Environment:
                         # if multiple enemy __guardians are present then attack all, if none of them are there then
                         # for __guardians present would be empty
                         if guardian.get_belongs_to_player() == self.__player2 and guardian.is_alive():
-                            print("Rocket is attacking", guardian.get_type(), "of player2", )
                             # update get_troop to return guardian object after checking if the guardian is not dead
                             feedback = guardian.set_health(guardian.get_health() - our_guardian.get_attack_damage(),
                                                            self.get_rounds())
@@ -864,7 +864,6 @@ class Environment:
                     player1_action.get_guardian_type())  # update it to return
                 # guardian object directly
                 if player1_action.get_target(self.__graph) != guardian.get_coordinates():
-                    print('669')
                     guardian.get_coordinates().remove_guardian_from_cell(guardian)
                     guardian.set_coordinates(player1_action.get_target(self.__graph))
                     guardian.get_coordinates().add_guardian_to_cell(guardian)
@@ -875,7 +874,6 @@ class Environment:
                     player2_action.get_guardian_type())  # update it to return
                 # guardian object directly
                 if player2_action.get_target(self.__graph) != guardian.get_coordinates():
-                    print('709')
                     guardian.get_coordinates().remove_guardian_from_cell(guardian)
                     guardian.set_coordinates(player2_action.get_target(self.__graph))
                     guardian.get_coordinates().add_guardian_to_cell(guardian)
@@ -897,11 +895,7 @@ class Environment:
                             if feedback:
                                 feedback.set_data({"attacker_type": our_guardian.get_type(),
                                                    'victim_type': guardian.get_type()})
-                                print("Guardians Present are ", guardian.get_coordinates().get_guardians_present())
-                                print('732')
                                 guardian.get_coordinates().remove_guardian_from_cell(guardian)
-                                print("Guardians Present after removing",
-                                      guardian.get_coordinates().get_guardians_present())
 
                                 self.add_player2_feedback(feedback)
                             self.add_player1_feedback(Feedback("attack_success",
@@ -919,8 +913,7 @@ class Environment:
                     player2_action.get_guardian_type())
                 if guardians_present and our_guardian:
                     for guardian in guardians_present:
-                        # if multiple enemy __guardians are present then attack all, if none of them are there then
-                        # for __guardians present would be empty
+
                         if guardian.get_belongs_to_player() == self.__player1 and guardian.is_alive():
                             # update get_troop to return guardian object after checking if the guardian is not dead
                             feedback = guardian.set_health(guardian.get_health() - our_guardian.get_attack_damage(),
@@ -929,11 +922,7 @@ class Environment:
                                 feedback.set_data({"attacker_type": our_guardian.get_type(),
                                                    'victim_type': guardian.get_type()})
 
-                                print("Guardians Present are 22", guardian.get_coordinates().get_guardians_present())
-                                print('764')
                                 guardian.get_coordinates().remove_guardian_from_cell(guardian)
-                                print("Guardians Present after removing22",
-                                      guardian.get_coordinates().get_guardians_present())
 
                                 self.add_player1_feedback(feedback)
 
@@ -943,9 +932,6 @@ class Environment:
                             self.add_player1_feedback(Feedback("you_have_been_attacked",
                                                                {"attacker": our_guardian.get_type(),
                                                                 "victim_type": guardian.get_type()}))
-
-            elif player1_action.get_action_type == "Special":
-                player1_action.get_guardian().special_ability()  # since we are getting the guradian object corresponding to the sub class, we can directly call the special ability
 
         return True
 
@@ -981,20 +967,16 @@ class Environment:
         reduced_score_player1 = (self.__player1_penalty_score / self.__max_penalty_score) * 0.5
         reduced_score_player2 = (self.__player2_penalty_score / self.__max_penalty_score) * 0.5
 
-        # print("Reduced score for player 1: ", reduced_score_player1)
-        # print("Reduced score for player 2: ", reduced_score_player2)
 
         player1_alive_score = 0
         for guardian in self.__player1.get_guardians().values():
             player1_alive_score += guardian.get_score()
-        # print("Player 1 alive score: ", (player1_alive_score / (self.__rounds * 5)) * 0.5)
         reduced_score_player1 += (player1_alive_score / (self.__rounds * 5)) * 0.5
 
         player2_alive_score = 0
         for guardian in self.__player2.get_guardians().values():
             player2_alive_score += guardian.get_score()
 
-        # print("Player 2 alive score: ", (player2_alive_score / (self.__rounds * 5)) * 0.5)
 
         reduced_score_player2 += (player2_alive_score / (self.__rounds * 5)) * 0.5
 

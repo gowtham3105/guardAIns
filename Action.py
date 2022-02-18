@@ -1,4 +1,3 @@
-
 class Action:
     # UPDATE ACTION TO SEND the acting players, drax, gamora.. objects directly with get_guardian(),
     # and update get_coordinate to send cell object directly
@@ -9,12 +8,18 @@ class Action:
     TROOPS = ('Groot', 'Rocket', 'Gamora', 'StarLord', 'Drax')
 
     @classmethod
-    def get_obj_from_json(cls, json_data: dict):
+    def get_obj_from_json(cls, json_data: dict, graph):
         try:
             action_type = json_data["action_type"]
             troop = json_data["troop"]
             # tuple str to tuple
+
             target = tuple(map(int, json_data["target"].strip('(').strip(')').split(',')))
+            if not (0 <= target[0] < len(graph) and 0 <= target[1] < len(graph[0])):
+                raise Exception("Invalid target coordinates")
+            else:
+                print("target accepted")
+
             player_id = json_data["player_id"]
             round_no = json_data['round_no']
             return cls(action_type, troop, target, round_no, player_id)
@@ -47,7 +52,8 @@ class Action:
         return self.__troop
 
     def get_target(self, graph) -> tuple:
-        return graph[self.__target[1]][self.__target[0]]
+        if 0 <= self.__target[1] < len(graph) and 0 <= self.__target[0] < len(graph[0]):
+            return graph[self.__target[1]][self.__target[0]]
 
     def get_target_coordinates(self) -> tuple:
         return self.__target
