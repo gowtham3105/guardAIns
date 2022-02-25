@@ -67,15 +67,18 @@ def bfs(state):
 
 
     else:  # if not, then add cell to visited and stack and return cell
-
-        stack.append(
-            state["movegen"]["Gamora"]["current_cell"]["coordinates"])
+        if state["movegen"]["Gamora"]["current_cell"]["coordinates"] not in stack:
+            stack.append(
+                state["movegen"]["Gamora"]["current_cell"]["coordinates"])
         print("Next Cell2: ", cell[0])
         return cell[0]
 
 
 @sio.event
 def action(state):
+    fi = open('state.json', 'w')
+    fi.write(json.dumps(state))
+    fi.close()
     # cells = [(0, 1), (1, 0), (0, -1), (-1, 0)]
     # cell = random.choice(cells)
     # guardians = ["Gamora", "Drax", "Rocket", "Groot", "StarLord"]

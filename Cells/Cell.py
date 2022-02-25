@@ -29,6 +29,10 @@ class Cell:
         if cell not in self.__neighbour_cells:
             self.__neighbour_cells.append(cell)
 
+    def remove_neighbour_cell(self, cell: 'Cell'):
+        if cell in self.__neighbour_cells:
+            self.__neighbour_cells.remove(cell)
+
     def get_neighbour_cells(self):
         return self.__neighbour_cells
 

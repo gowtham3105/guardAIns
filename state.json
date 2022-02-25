@@ -1,10 +1,10 @@
 {
   "movegen": {
     "Gamora": {
-      "health": 100,
+      "health": 75,
       "cooldown": 0,
       "current_cell": {
-        "coordinates": "(0, 1)",
+        "coordinates": "(3, 2)",
         "cell_type": "Normal",
         "is_powerStone_present": "False",
         "guardians_present": [
@@ -18,51 +18,46 @@
         [],
         [
           {
-            "coordinates": "(0, 0)",
-            "cell_type": "Normal",
+            "coordinates": "(2, 2)",
+            "cell_type": "HealPoint",
             "is_powerStone_present": "False",
-            "guardians_present": [
-              {
-                "belongs_to": "you",
-                "guardian_name": "Rocket"
-              },
-              {
-                "belongs_to": "you",
-                "guardian_name": "Groot"
-              },
-              {
-                "belongs_to": "you",
-                "guardian_name": "Drax"
-              },
-              {
-                "belongs_to": "you",
-                "guardian_name": "StarLord"
-              }
-            ]
+            "guardians_present": []
           }
         ],
         [
           {
-            "coordinates": "(1, 1)",
+            "coordinates": "(3, 3)",
             "cell_type": "Normal",
             "is_powerStone_present": "False",
-            "guardians_present": []
+            "guardians_present": [
+              {
+                "belongs_to": "opponent",
+                "guardian_name": "Gamora"
+              }
+            ]
           },
           {
-            "coordinates": "(1, 2)",
-            "cell_type": "Normal",
+            "coordinates": "(3, 4)",
+            "cell_type": "Teleporter",
             "is_powerStone_present": "False",
             "guardians_present": []
           }
         ],
-        []
+        [
+          {
+            "coordinates": "(4, 2)",
+            "cell_type": "Normal",
+            "is_powerStone_present": "False",
+            "guardians_present": []
+          }
+        ]
       ]
     },
     "Drax": {
       "health": 150,
       "cooldown": 3,
       "current_cell": {
-        "coordinates": "(0, 0)",
+        "coordinates": "(4, 4)",
         "cell_type": "Normal",
         "is_powerStone_present": "False",
         "guardians_present": [
@@ -86,23 +81,23 @@
       },
       "neighbour_cells": [
         [],
-        [],
-        [],
         [
           {
-            "coordinates": "(1, 0)",
-            "cell_type": "Normal",
+            "coordinates": "(3, 4)",
+            "cell_type": "Teleporter",
             "is_powerStone_present": "False",
             "guardians_present": []
           }
-        ]
+        ],
+        [],
+        []
       ]
     },
     "Rocket": {
       "health": 75,
       "cooldown": 0,
       "current_cell": {
-        "coordinates": "(0, 0)",
+        "coordinates": "(4, 4)",
         "cell_type": "Normal",
         "is_powerStone_present": "False",
         "guardians_present": [
@@ -126,29 +121,23 @@
       },
       "neighbour_cells": [
         [],
-        [],
-        [],
         [
           {
-            "coordinates": "(1, 0)",
-            "cell_type": "Normal",
-            "is_powerStone_present": "False",
-            "guardians_present": []
-          },
-          {
-            "coordinates": "(2, 0)",
-            "cell_type": "Normal",
+            "coordinates": "(3, 4)",
+            "cell_type": "Teleporter",
             "is_powerStone_present": "False",
             "guardians_present": []
           }
-        ]
+        ],
+        [],
+        []
       ]
     },
     "Groot": {
       "health": 200,
       "cooldown": 0,
       "current_cell": {
-        "coordinates": "(0, 0)",
+        "coordinates": "(4, 4)",
         "cell_type": "Normal",
         "is_powerStone_present": "False",
         "guardians_present": [
@@ -172,29 +161,23 @@
       },
       "neighbour_cells": [
         [],
-        [],
-        [],
         [
           {
-            "coordinates": "(1, 0)",
-            "cell_type": "Normal",
-            "is_powerStone_present": "False",
-            "guardians_present": []
-          },
-          {
-            "coordinates": "(2, 0)",
-            "cell_type": "Normal",
+            "coordinates": "(3, 4)",
+            "cell_type": "Teleporter",
             "is_powerStone_present": "False",
             "guardians_present": []
           }
-        ]
+        ],
+        [],
+        []
       ]
     },
     "StarLord": {
       "health": 100,
       "cooldown": 0,
       "current_cell": {
-        "coordinates": "(0, 0)",
+        "coordinates": "(4, 4)",
         "cell_type": "Normal",
         "is_powerStone_present": "False",
         "guardians_present": [
@@ -218,81 +201,94 @@
       },
       "neighbour_cells": [
         [],
-        [],
-        [],
         [
           {
-            "coordinates": "(1, 0)",
-            "cell_type": "Normal",
-            "is_powerStone_present": "False",
-            "guardians_present": []
-          },
-          {
-            "coordinates": "(2, 0)",
-            "cell_type": "Normal",
+            "coordinates": "(3, 4)",
+            "cell_type": "Teleporter",
             "is_powerStone_present": "False",
             "guardians_present": []
           }
-        ]
+        ],
+        [],
+        []
       ]
     }
   },
   "feedback": [
     {
+      "code": "INFINITY_STONE_MOVED",
+      "message": "Infinity Stone moved",
+      "data": {}
+    },
+    {
+      "code": "GUARDIAN_MOVED_INFINITY_STONE",
+      "message": "Guardian moved Infinity Stone",
+      "data": {
+        "guardian_coordinates": [
+          2,
+          3
+        ],
+        "guardian": "Gamora"
+      }
+    },
+    {
+      "code": "TELEPORT_SUCCESS",
+      "message": "Teleport Success",
+      "data": {
+        "coordinates": [
+          3,
+          2
+        ],
+        "guardian": "Gamora"
+      }
+    },
+    {
       "code": "STAR_LORD_SPECIAL_POWER",
       "message": "Star Lord Special Power",
       "data": {
         "special_vision": [
-          [],
-          [],
           [
             [
-              0,
-              1
-            ],
-            [
-              0,
-              2
-            ],
-            [
-              0,
+              4,
               3
             ],
             [
-              0,
-              4
+              4,
+              2
             ],
             [
-              0,
-              5
-            ]
-          ],
-          [
-            [
-              1,
-              0
-            ],
-            [
-              2,
-              0
-            ],
-            [
-              3,
-              0
+              4,
+              1
             ],
             [
               4,
               0
+            ]
+          ],
+          [
+            [
+              3,
+              4
             ],
             [
-              5,
-              0
+              2,
+              4
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              0,
+              4
             ]
-          ]
+          ],
+          [],
+          []
         ]
       }
     }
   ],
-  "penalty_score": 300,
-  "round_no": 2
+  "penalty_score": 298,
+  "round_no": 300
 }

@@ -47,7 +47,7 @@ class Clue(Cell):
 
         direction_slope = (self.get_coordinates()[0] - infinityStone.get_coordinates().get_coordinates()[0]) / (
                 self.get_coordinates()[1] - infinityStone.get_coordinates().get_coordinates()[1])
-        return {"clue_type": "get_direction_to_infinity_stone", "direction": str(direction_slope),
+        return {"clue_type": "get_direction_to_infinity_stone", "direction": str(round(direction_slope, 2)),
                 'guardian': guardian.get_type()}
 
     def get_clue(self, opponentPlayer: Player, infinityStone: InfinityStone, guardian):

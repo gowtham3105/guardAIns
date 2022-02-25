@@ -212,9 +212,13 @@ class Environment:
                 x = random.randint(0, self.__width - 1)
                 y = random.randint(0, self.__height - 1)
 
-
             if self.__graph[y][x].get_cell_type() == 'Normal':
+                prev_cell = self.__graph[y][x]
                 self.__graph[y][x] = Teleporter(self.__graph[y][x])
+                # replace the cell with teleporter in the neighbour cells
+                for cell in self.__graph[y][x].get_neighbour_cells():
+                    cell.remove_neighbour_cell(prev_cell)
+                    cell.add_neighbour_cell(self.__graph[y][x])
 
         for i in range(no_of_healpoints):
             x = random.randint(0, self.__width - 1)
@@ -225,7 +229,12 @@ class Environment:
                 y = random.randint(0, self.__height - 1)
 
             if self.__graph[y][x].get_cell_type() == 'Normal':
+                prev_cell = self.__graph[y][x]
                 self.__graph[y][x] = HealPoint(self.__graph[y][x])
+                # replace the cell with healpoint in the neighbour cells
+                for cell in self.__graph[y][x].get_neighbour_cells():
+                    cell.remove_neighbour_cell(prev_cell)
+                    cell.add_neighbour_cell(self.__graph[y][x])
 
         for i in range(no_of_clues):
             x = random.randint(0, self.__width - 1)
@@ -235,9 +244,13 @@ class Environment:
                 x = random.randint(0, self.__width - 1)
                 y = random.randint(0, self.__height - 1)
 
-
             if self.__graph[y][x].get_cell_type() == 'Normal':
+                prev_cell = self.__graph[y][x]
                 self.__graph[y][x] = Clue(self.__graph[y][x])
+                # replace the cell with clue in the neighbour cells
+                for cell in self.__graph[y][x].get_neighbour_cells():
+                    cell.remove_neighbour_cell(prev_cell)
+                    cell.add_neighbour_cell(self.__graph[y][x])
 
         for i in range(no_of_beasts):
             x = random.randint(0, self.__width - 1)
@@ -247,21 +260,25 @@ class Environment:
                 x = random.randint(0, self.__width - 1)
                 y = random.randint(0, self.__height - 1)
 
-
             if self.__graph[y][x].get_cell_type() == 'Normal':
+                prev_cell = self.__graph[y][x]
                 self.__graph[y][x] = Beast(self.__graph[y][x])
+                # replace the cell with beast in the neighbour cells
+                for cell in self.__graph[y][x].get_neighbour_cells():
+                    cell.remove_neighbour_cell(prev_cell)
+                    cell.add_neighbour_cell(self.__graph[y][x])
 
         x = random.randint(0, self.__width - 1)
         y = random.randint(0, self.__height - 1)
 
         while self.__graph[y][x].get_cell_type() != 'Normal':
-            x = random.randint(0, self.__width - 1)
+            x = random.randint(1, self.__width - 2)
             y = random.randint(0, self.__height - 1)
 
-        print("Infinity Stone placed at: ", y, x)
-        power_stone = InfinityStone(self.get_graph()[y][x])
-        self.__infinity_stone = power_stone
-
+        if self.__graph[y][x].get_cell_type() == 'Normal':
+            print("Infinity Stone placed at: ", x, y)
+            power_stone = InfinityStone(self.get_graph()[y][x])
+            self.__infinity_stone = power_stone
 
         return True
 
@@ -646,7 +663,7 @@ class Environment:
             self.__rounds += 1
             sio.emit('game_status', "Game Running - Round " + str(self.__rounds))
             print("Round: ", self.__rounds)
-            time.sleep(5)
+            # time.sleep(5)
             self.get_reduced_score()
             print("Player 1 Score: ", self.get_player1_penality_score())
             print("Player 2 Score: ", self.get_player2_penality_score())
@@ -967,7 +984,6 @@ class Environment:
         reduced_score_player1 = (self.__player1_penalty_score / self.__max_penalty_score) * 0.5
         reduced_score_player2 = (self.__player2_penalty_score / self.__max_penalty_score) * 0.5
 
-
         player1_alive_score = 0
         for guardian in self.__player1.get_guardians().values():
             player1_alive_score += guardian.get_score()
@@ -976,7 +992,6 @@ class Environment:
         player2_alive_score = 0
         for guardian in self.__player2.get_guardians().values():
             player2_alive_score += guardian.get_score()
-
 
         reduced_score_player2 += (player2_alive_score / (self.__rounds * 5)) * 0.5
 
