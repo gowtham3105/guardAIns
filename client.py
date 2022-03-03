@@ -115,5 +115,5 @@ def connected(data):
     print("Response:", data)
 
 
-sio.connect('http://127.0.0.1:9000',
+sio.connect('http://127.0.0.1:8000',
             {"auth": json.dumps({'player_id': PLAYER_ID, 'password': PLAYER_PASSWORD, 'room': PLAYER_ROOM})})

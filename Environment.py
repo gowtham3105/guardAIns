@@ -671,7 +671,7 @@ class Environment:
             print("Player 2 Feedback: ", self.__player2_feedback)
             print("player 1 Guardians: ", self.get_player1().get_guardians())
             print("player 2 Guardians: ", self.get_player2().get_guardians())
-
+            
         return True
 
     def validate_action(self, action: Action) -> bool:

@@ -3,7 +3,7 @@ import random
 import threading
 import time
 from datetime import datetime
-
+import urllib.parse
 import eventlet
 import socketio
 
@@ -26,6 +26,10 @@ rooms = {
         'player2': {
             'player_id': 'player2',
             "password": "player2",
+        },
+        "audience":{
+            "player_id": "audience",
+            "password": "audience",
         }
     },
 }
@@ -33,9 +37,9 @@ rooms = {
 
 def create_socket():
     # create a Socket.IO server
-    sio = socketio.Server(async_mode='eventlet', ping_interval=0.5, ping_timeout=1)
+    sio = socketio.Server(ping_interval=0.5, ping_timeout=1, cors_allowed_origins='*')
     # wrap with a WSGI application
-    app = socketio.WSGIApp(sio)
+    app = socketio.WSGIApp(sio)    
 
     return sio, app
 
@@ -43,7 +47,7 @@ def create_socket():
 # Press the green button in the gutter to run the script.
 def main():
     sio, app = create_socket()
-
+    print("socket created")
     ROOM_ID = 'room12'
 
     if ROOM_ID not in rooms.keys():
@@ -58,7 +62,7 @@ def main():
     print(start_time)
     print(time.time())
     print(start_time - time.time())
-    start_time = time.time() + 5
+    start_time = time.time() + 15
     env = Environment(ROOM_ID, start_time, 5, 5, 300, 1, 300)
     env.create_graph()
 
@@ -109,15 +113,21 @@ def main():
         global rooms
         print("connect ", sid)
         try:
-            auth_details = None
-            if 'HTTP_AUTH' in environ:
+            auth_details=None
+            # print(environ['HTTP_AUTH'])
+            if 'HTTP_AUTH' in environ and environ['HTTP_AUTH']:
                 auth_details = json.loads(environ['HTTP_AUTH'])
+                print(auth_details)
+            elif 'QUERY_STRING' in environ and environ['QUERY_STRING'] != '':
+                # auth_details = json.loads(environ['QUERY_STRING'])
+                auth_details = urllib.parse.parse_qs(environ['QUERY_STRING'])
+                for k in auth_details:
+                    auth_details[k]=auth_details[k][0]
             else:
                 print("No Auth Details")
                 sio.disconnect(sid)
-                return False
+                return False            
 
-            print(auth_details)
             if auth_details['room'] in rooms.keys():
                 if auth_details['player_id'] == rooms[auth_details['room']]['player1']['player_id']:
                     if auth_details['password'] == rooms[auth_details['room']]['player1']['password']:
@@ -160,6 +170,13 @@ def main():
                         print("wrong password for player2")
                         sio.disconnect(sid)
                         return False
+                elif auth_details['player_id'] == rooms[auth_details['room']]['audience']['player_id']:
+                    if auth_details['password'] == rooms[auth_details['room']]['audience']['password']:
+                        print("audience connected")
+                    else:
+                        print("wrong password for audience")
+                        sio.disconnect(sid)
+                        return False
                 else:
                     print("wrong username")
                     sio.disconnect(sid)
@@ -199,7 +216,7 @@ def main():
 
     # start the server
 
-    eventlet.wsgi.server(eventlet.listen(('', 9000)), app)
+    eventlet.wsgi.server(eventlet.listen(('', 8000)), app, )
 
 
 if __name__ == '__main__':
