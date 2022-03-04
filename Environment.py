@@ -683,6 +683,11 @@ class Environment:
 
             print("player 2 Guardians: ", self.get_player2().get_guardians())
             # sio.emit('playerqguardians', {'guardians_player2':self.get_player2().get_guardians()})
+            guardian_json={}
+            for guardian in self.get_player2().get_guardians().keys():
+                guardian_json[guardian]=(self.get_player2().get_guardians()[guardian].get_health(), self.get_player2().get_guardians()[guardian].get_coordinates().get_coordinates())
+            print(guardian_json)
+            sio.emit('player2guardians', {'guardians_player2':guardian_json})
 
         return True
 
