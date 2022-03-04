@@ -661,17 +661,29 @@ class Environment:
                         self.add_player2_feedback(feedback)
 
             self.__rounds += 1
-            sio.emit('game_status', "Game Running - Round " + str(self.__rounds))
+            sio.emit('game_status', {"roundno":"Game Running - Round " + str(self.__rounds)})
             print("Round: ", self.__rounds)
             # time.sleep(5)
             self.get_reduced_score()
             print("Player 1 Score: ", self.get_player1_penality_score())
             print("Player 2 Score: ", self.get_player2_penality_score())
             print("Player 1 Feedback: ", self.__player1_feedback)
+            # for feedback in self.__player1_feedback:
+            #     sio.emit('player1feedback',  {'player1feedback':feedback})   ###############################each feedback JSON seriable
+
             print("Player 2 Feedback: ", self.__player2_feedback)
+            # sio.emit('player2feedback', {'player2feedback':self.__player2_feedback})
+
             print("player 1 Guardians: ", self.get_player1().get_guardians())
+            guardian_json={}
+            for guardian in self.get_player1().get_guardians().keys():
+                guardian_json[guardian]=(self.get_player1().get_guardians()[guardian].get_health(), self.get_player1().get_guardians()[guardian].get_coordinates().get_coordinates())
+            print(guardian_json)
+            sio.emit('player1guardians', {'guardians_player1':guardian_json})
+
             print("player 2 Guardians: ", self.get_player2().get_guardians())
-            
+            # sio.emit('playerqguardians', {'guardians_player2':self.get_player2().get_guardians()})
+
         return True
 
     def validate_action(self, action: Action) -> bool:

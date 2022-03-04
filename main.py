@@ -82,6 +82,7 @@ def main():
             try:
                 current_action = Action.get_obj_from_json(data, env.get_graph())
                 print(current_action.json(), "player1")
+                sio.emit('player1action', {'player1action': current_action.json()})
                 if current_action:
                     env.add_action_to_player1(current_action)
                 else:
@@ -89,11 +90,13 @@ def main():
 
             except Exception as e:
                 env.add_player1_feedback(Feedback("error", {"data": "Invalid action"}))
+                sio.emit('player1feedback', {'player1feedback': env.get_player1_feedback().json()})
                 env.reduce_score(env.get_player1().get_player_id(), "invalid_action")
                 print(e)
         elif sid == env.get_player2().get_socket_id():
             try:
                 current_action = Action.get_obj_from_json(data, env.get_graph())
+                sio.emit('player2action', {'player2action': current_action.json()})
                 print(current_action.json(), "player2")
 
                 if current_action:
@@ -102,6 +105,7 @@ def main():
                     raise Exception("Invalid action")
             except Exception as e:
                 env.add_player2_feedback(Feedback("error", {"data": "Invalid action"}))
+                sio.emit('player2feedback', {'player2feedback': env.get_player2_feedback().json()})
                 env.reduce_score(env.get_player2().get_player_id(), "invalid_action")
                 print(e)
         else:
